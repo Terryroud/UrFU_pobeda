@@ -3,133 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактор векторов и паттернов</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Security Patterns Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-bg: #1a1c23;
+            --card-bg: #2a2d37;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: #3a3e4a;
+        }
+
         body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
         }
+
+        .navbar {
+            background: rgba(26, 28, 35, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
         .navbar-brand {
-            font-weight: 600;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+
         .card {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border: none;
-            border-radius: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
+
         .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
+            background: var(--primary-gradient) !important;
+            border: none;
+            border-radius: 16px 16px 0 0 !important;
+            padding: 1.5rem;
         }
+
+        .nav-tabs {
+            border: none;
+            gap: 8px;
+        }
+
         .nav-tabs .nav-link {
-            color: #495057;
-            font-weight: 500;
+            color: var(--text-secondary);
             border: none;
-            padding: 12px 20px;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: transparent;
         }
+
+        .nav-tabs .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
         .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px;
-            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
         }
-        .pattern-section {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+        .tab-content {
+            padding: 2rem 0;
         }
-        .pattern-textarea {
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            min-height: 200px;
-            resize: vertical;
-        }
-        .vector-json {
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            min-height: 400px;
-            resize: vertical;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 10px 25px;
-            font-weight: 500;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-            transform: translateY(-1px);
-        }
-        .status-message {
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .help-text {
-            color: #6c757d;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        .tab-pane {
-            padding: 20px 0;
-        }
+
         .section-title {
-            color: #6c757d;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title i {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            color: var(--text-primary);
+        }
+
+        .pattern-textarea {
+            min-height: 300px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .vector-json {
+            min-height: 400px;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .success {
+            background: rgba(72, 187, 120, 0.15);
+            border-color: rgba(72, 187, 120, 0.3);
+            color: #48bb78;
+        }
+
+        .error {
+            background: rgba(245, 101, 101, 0.15);
+            border-color: rgba(245, 101, 101, 0.3);
+            color: #f56565;
+        }
+
+        .help-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .json-valid {
+            border-color: #48bb78 !important;
+        }
+
+        .json-invalid {
+            border-color: #f56565 !important;
+        }
+
+        .stats-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Темная тема для скроллбара */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #667eea;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <i class="fas fa-shield-alt me-2"></i>
-                Редактор векторов и паттернов
+                Security Patterns Editor
             </a>
             <div class="navbar-nav ms-auto">
                 <span class="navbar-text">
-                    <i class="fas fa-sync-alt me-1"></i>
-                    <span id="lastSaved">Не сохранено</span>
+                    <i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i>
+                    <span id="lastSaved">Готов к работе</span>
                 </span>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container py-4">
         <div class="row">
             <div class="col-12">
-                <div class="card">
+                <div class="card fade-in">
                     <div class="card-header">
-                        <ul class="nav nav-tabs card-header-tabs" id="editorTabs" role="tablist">
+                        <ul class="nav nav-tabs" id="editorTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="patterns-tab" data-bs-toggle="tab" 
                                         data-bs-target="#patterns" type="button" role="tab">
-                                    <i class="fas fa-list-alt me-2"></i>INJECTION_PATTERNS
+                                    <i class="fas fa-list me-2"></i>Паттерны
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="vectors-tab" data-bs-toggle="tab" 
                                         data-bs-target="#vectors" type="button" role="tab">
-                                    <i class="fas fa-project-diagram me-2"></i>Vectors
+                                    <i class="fas fa-project-diagram me-2"></i>Векторы
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -148,13 +288,14 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <h5 class="section-title">
-                                            <i class="fas fa-list me-2"></i>
-                                            INJECTION_PATTERNS
+                                            <i class="fas fa-code"></i>
+                                            Паттерны безопасности
                                         </h5>
                                         <textarea class="form-control pattern-textarea" 
-                                                  id="patternsText">{{ patterns_text }}</textarea>
+                                                  id="patternsText" 
+                                                  placeholder="Введите паттерны, каждый с новой строки...">{{ patterns_text }}</textarea>
                                         <div class="help-text">
-                                            Список паттернов для обнаружения инъекций (по одному на строку)
+                                            Список фраз для обнаружения инъекций. Каждая строка - отдельный паттерн
                                         </div>
                                     </div>
                                 </div>
@@ -162,8 +303,12 @@
                                 <div class="row mt-4">
                                     <div class="col-12">
                                         <button class="btn btn-primary btn-lg" onclick="savePatterns()">
-                                            <i class="fas fa-save me-2"></i>Сохранить INJECTION_PATTERNS
+                                            <i class="fas fa-save me-2"></i>Сохранить паттерны
                                         </button>
+                                        <span class="stats-badge ms-3">
+                                            <i class="fas fa-hashtag me-1"></i>
+                                            <span id="patternsCount">0</span> паттернов
+                                        </span>
                                         <div id="patternsStatus" class="status-message"></div>
                                     </div>
                                 </div>
@@ -174,13 +319,14 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <h5 class="section-title">
-                                            <i class="fas fa-code me-2"></i>
-                                            JSON структура векторов
+                                            <i class="fas fa-cogs"></i>
+                                            Векторы атак
                                         </h5>
                                         <textarea class="form-control vector-json" 
-                                                  id="vectorsData">{{ vectors_data }}</textarea>
+                                                  id="vectorsData"
+                                                  placeholder='{"vectors": [{"name": "...", "description": "...", "patterns": [], "weight": 1.0}]}'>{{ vectors_data }}</textarea>
                                         <div class="help-text">
-                                            Редактируйте JSON структуру векторов. Обязательные поля: name, description, patterns, weight
+                                            JSON структура с группами паттернов. Проверяйте синтаксис перед сохранением
                                         </div>
                                     </div>
                                 </div>
@@ -188,8 +334,12 @@
                                 <div class="row mt-4">
                                     <div class="col-12">
                                         <button class="btn btn-primary btn-lg" onclick="saveVectors()">
-                                            <i class="fas fa-save me-2"></i>Сохранить Vectors
+                                            <i class="fas fa-save me-2"></i>Сохранить векторы
                                         </button>
+                                        <span class="stats-badge ms-3">
+                                            <i class="fas fa-layer-group me-1"></i>
+                                            <span id="vectorsCount">0</span> векторов
+                                        </span>
                                         <div id="vectorsStatus" class="status-message"></div>
                                     </div>
                                 </div>
@@ -199,33 +349,26 @@
                             <div class="tab-pane fade" id="help" role="tabpanel">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div class="pattern-section">
-                                            <h5 class="section-title">
-                                                <i class="fas fa-info-circle me-2"></i>
-                                                О INJECTION_PATTERNS
-                                            </h5>
-                                            <p>Список паттернов для обнаружения prompt инъекций.</p>
-                                            <p class="help-text">
-                                                Каждый паттерн на новой строке. Регистр не учитывается.
-                                                Пример: "ignore", "disregard", "system prompt"
+                                        <div class="feature-card">
+                                            <div class="feature-icon">
+                                                <i class="fas fa-shield-virus"></i>
+                                            </div>
+                                            <h5>Защита от инъекций</h5>
+                                            <p class="text-secondary">
+                                                Создавайте списки паттернов для обнаружения попыток обхода безопасности 
+                                                и манипуляции AI-ассистентами
                                             </p>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="pattern-section">
-                                            <h5 class="section-title">
-                                                <i class="fas fa-code me-2"></i>
-                                                О Vectors
-                                            </h5>
-                                            <p>Векторы содержат:</p>
-                                            <ul>
-                                                <li><strong>name</strong>: Уникальное название</li>
-                                                <li><strong>description</strong>: Описание вектора</li>
-                                <li><strong>patterns</strong>: Список паттернов</li>
-                                                <li><strong>weight</strong>: Вес (0.1-10.0)</li>
-                                            </ul>
-                                            <p class="help-text">
-                                                Используйте valid JSON формат. Проверяйте синтаксис перед сохранением.
+                                        <div class="feature-card">
+                                            <div class="feature-icon">
+                                                <i class="fas fa-code-merge"></i>
+                                            </div>
+                                            <h5>Группировка паттернов</h5>
+                                            <p class="text-secondary">
+                                                Объединяйте похожие паттерны в векторы с общим весом 
+                                                и описанием для лучшей организации
                                             </p>
                                         </div>
                                     </div>
@@ -233,17 +376,27 @@
                                 
                                 <div class="row mt-4">
                                     <div class="col-12">
-                                        <div class="pattern-section">
+                                        <div class="feature-card">
                                             <h5 class="section-title">
-                                                <i class="fas fa-lightbulb me-2"></i>
-                                                Советы
+                                                <i class="fas fa-lightbulb"></i>
+                                                Советы по использованию
                                             </h5>
-                                            <ul>
-                                                <li>Сохраняйте изменения после редактирования</li>
-                                                <li>Проверяйте JSON синтаксис для векторов</li>
-                                                <li>Используйте понятные описания</li>
-                                                <li>Тестируйте паттерны на реальных примерах</li>
-                                            </ul>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <ul class="list-unstyled">
+                                                        <li class="mb-2">✅ Используйте конкретные фразы</li>
+                                                        <li class="mb-2">✅ Добавляйте варианты написания</li>
+                                                        <li class="mb-2">✅ Тестируйте на реальных примерах</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <ul class="list-unstyled">
+                                                        <li class="mb-2">❌ Избегайте слишком общих фраз</li>
+                                                        <li class="mb-2">❌ Не дублируйте паттерны</li>
+                                                        <li class="mb-2">❌ Проверяйте JSON синтаксис</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -255,17 +408,17 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function updateLastSaved() {
             const now = new Date();
             document.getElementById('lastSaved').textContent = 
-                `Последнее сохранение: ${now.toLocaleTimeString()}`;
+                `Сохранено: ${now.toLocaleTimeString()}`;
         }
-        
+
         function showNotification(elementId, message, isSuccess) {
             const element = document.getElementById(elementId);
-            element.innerHTML = message;
+            element.innerHTML = `<i class="${isSuccess ? 'fas fa-check' : 'fas fa-exclamation-triangle'} me-2"></i>${message}`;
             element.className = isSuccess ? 'status-message success' : 'status-message error';
             
             setTimeout(() => {
@@ -273,7 +426,23 @@
                 element.className = 'status-message';
             }, 5000);
         }
-        
+
+        function updatePatternsCount() {
+            const text = document.getElementById('patternsText').value;
+            const count = text.split('\n').filter(p => p.trim()).length;
+            document.getElementById('patternsCount').textContent = count;
+        }
+
+        function updateVectorsCount() {
+            try {
+                const data = JSON.parse(document.getElementById('vectorsData').value);
+                const count = data.vectors ? data.vectors.length : 0;
+                document.getElementById('vectorsCount').textContent = count;
+            } catch {
+                document.getElementById('vectorsCount').textContent = '0';
+            }
+        }
+
         function savePatterns() {
             const patternsText = document.getElementById('patternsText').value;
             const patterns = patternsText.split('\n')
@@ -288,20 +457,17 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showNotification('patternsStatus', 
-                        '<i class="fas fa-check-circle me-2"></i>' + data.message, true);
+                    showNotification('patternsStatus', data.message, true);
                     updateLastSaved();
                 } else {
-                    showNotification('patternsStatus', 
-                        '<i class="fas fa-exclamation-circle me-2"></i>' + data.message, false);
+                    showNotification('patternsStatus', data.message, false);
                 }
             })
             .catch(error => {
-                showNotification('patternsStatus', 
-                    '<i class="fas fa-exclamation-circle me-2"></i>Ошибка сети: ' + error, false);
+                showNotification('patternsStatus', 'Ошибка сети: ' + error, false);
             });
         }
-        
+
         function saveVectors() {
             try {
                 const vectorsData = JSON.parse(document.getElementById('vectorsData').value);
@@ -314,32 +480,54 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showNotification('vectorsStatus', 
-                            '<i class="fas fa-check-circle me-2"></i>' + data.message, true);
+                        showNotification('vectorsStatus', data.message, true);
                         updateLastSaved();
+                        updateVectorsCount();
                     } else {
-                        showNotification('vectorsStatus', 
-                            '<i class="fas fa-exclamation-circle me-2"></i>' + data.message, false);
+                        showNotification('vectorsStatus', data.message, false);
                     }
                 })
                 .catch(error => {
-                    showNotification('vectorsStatus', 
-                        '<i class="fas fa-exclamation-circle me-2"></i>Ошибка сети: ' + error, false);
+                    showNotification('vectorsStatus', 'Ошибка сети: ' + error, false);
                 });
             } catch (error) {
-                showNotification('vectorsStatus', 
-                    '<i class="fas fa-exclamation-circle me-2"></i>Ошибка JSON: ' + error, false);
+                showNotification('vectorsStatus', 'Ошибка JSON: ' + error, false);
             }
         }
-        
-        // Добавляем подсветку синтаксиса для JSON
+
+        // Обработчики событий
+        document.getElementById('patternsText').addEventListener('input', updatePatternsCount);
         document.getElementById('vectorsData').addEventListener('input', function() {
             try {
                 JSON.parse(this.value);
-                this.style.borderColor = '#28a745';
+                this.classList.add('json-valid');
+                this.classList.remove('json-invalid');
+                updateVectorsCount();
             } catch (e) {
-                this.style.borderColor = '#dc3545';
+                this.classList.add('json-invalid');
+                this.classList.remove('json-valid');
             }
+        });
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализируем счетчики
+            updatePatternsCount();
+            updateVectorsCount();
+            
+            // Проверяем валидность JSON при загрузке
+            try {
+                JSON.parse(document.getElementById('vectorsData').value);
+                document.getElementById('vectorsData').classList.add('json-valid');
+            } catch {
+                document.getElementById('vectorsData').classList.add('json-invalid');
+            }
+            
+            // Анимация загрузки
+            document.querySelectorAll('.fade-in').forEach(el => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            });
         });
     </script>
 </body>
