@@ -953,7 +953,6 @@ def test(): # Пример использования - мертво
     stats_final = classifier.get_vector_stats()
 
 if __name__ == "__main__": # Функция для запуска Tkinter интерфейса
-    run_web_interface()
     root = tk.Tk()
     app = JSONEditor(root)
     root.mainloop()
