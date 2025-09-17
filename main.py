@@ -25,7 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger("PromptSecurity")
 logging.getLogger().setLevel(logging.INFO)
 
-rag_model = RAG(logger)
+rag_model = RAG(logger, score_threshold=0.7)
 rag_model.create_faiss_index()
 
 # Создаем экземпляр бота
