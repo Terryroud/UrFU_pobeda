@@ -1,5 +1,6 @@
 import threading
 import webbrowser
+from pathlib import Path
 
 try:
     from flask import Flask, render_template, request, jsonify
@@ -16,7 +17,6 @@ if __name__ == "__main__":
     """Запускает веб-интерфейс редактора"""
     if Flask is None:
         print("Flask не установлен. Установите flask, чтобы запустить веб-интерфейс: pip install flask")
-        return
 
     templates_dir = Path('templates')
     templates_dir.mkdir(exist_ok=True)
