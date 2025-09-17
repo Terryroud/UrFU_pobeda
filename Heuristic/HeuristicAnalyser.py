@@ -4,21 +4,11 @@ import re
 import os
 import sys
 import tkinter as tk
-import threading
-import webbrowser
 from typing import List, Tuple, Optional, Dict, Set, Any
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from tkinter import ttk, messagebox, filedialog, scrolledtext
-
-try:
-    from flask import Flask, render_template, request, jsonify
-except Exception:
-    Flask = None
-    render_template = None
-    request = None
-    jsonify = None
 
 # Настройка логирования
 logging.basicConfig(
