@@ -1,0 +1,8 @@
+pyjwt
+requests
+python-telegram-bot
+regex
+python-dotenv
+sentence-transformers
+ftfy
+python-Levenshtein
