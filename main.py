@@ -9,23 +9,19 @@ from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
 from YandexGPTBot import YandexGPTBot
-from privates import get_private_key
+from RAG import RAG
 
 # Импорт и настройка переменных окружения
 load_dotenv()
 
-FOLDER_ID = os.getenv('FOLDER_ID')
-KEY_ID = os.getenv('KEY_ID')
-SERVICE_ACCOUNT_ID = os.getenv('SERVICE_ACCOUNT_ID')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-PRIVATE_KEY = get_private_key()
 
 # Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(f"prompt_security_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log", encoding='utf-8'),
+        logging.FileHandler(f"log/{datetime.now().strftime('%Y%m%d_%H%M%S')}.log", encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -33,8 +29,11 @@ logging.basicConfig(
 logger = logging.getLogger("PromptSecurity")
 logging.getLogger().setLevel(logging.INFO)
 
+rag_model = RAG(logger)
+rag_model.create_faiss_index()
+
 # Создаем экземпляр бота
-yandex_bot = YandexGPTBot()
+yandex_bot = YandexGPTBot(logger, rag_model)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""

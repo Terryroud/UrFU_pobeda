@@ -482,3 +482,5 @@ docs/build/
 docs/_build/
 
 integration_tests/
+
+vectorstore_faiss/

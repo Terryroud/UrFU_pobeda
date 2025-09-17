@@ -1,17 +1,29 @@
 import jwt
 import requests
 import time
-from Heuristic.v3 import PromptInjectionClassifier
+from Heuristic.HeuristicAnalyser import PromptInjectionClassifier
+from langchain_community.vectorstores import FAISS
+import os
+from privates import get_private_key
+from yandex_cloud_embeddings import YandexCloudEmbeddings
+
+FOLDER_ID = os.getenv('FOLDER_ID')
+KEY_ID = os.getenv('KEY_ID')
+SERVICE_ACCOUNT_ID = os.getenv('SERVICE_ACCOUNT_ID')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+PRIVATE_KEY = get_private_key()
 
 class YandexGPTBot:
-    def __init__(self):
+    def __init__(self, logger, rag_model):
         self.iam_token = None
         self.token_expires = 0
-        self.KEY_ID = None
-        self.SERVICE_ACCOUNT_ID = None
-        self.PRIVATE_KEY = None
-        self.FOLDER_ID = None
-        self.logger = None
+        self.KEY_ID = KEY_ID
+        self.SERVICE_ACCOUNT_ID = SERVICE_ACCOUNT_ID
+        self.PRIVATE_KEY = PRIVATE_KEY
+        self.FOLDER_ID = FOLDER_ID
+        self.logger = logger
+        self.embeddings = YandexCloudEmbeddings()
+        self.rag_model = rag_model
 
     def get_iam_token(self):
         """Получение IAM-токена (с кэшированием на 1 час)"""
@@ -66,7 +78,7 @@ class YandexGPTBot:
         result = classifier.analyze_text()
         self.logger.info(f"Запрос: {question}. Риск = {result['total_risk_score']}")
 
-        # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ
+        # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ./vectorstore_faiss
 
     def ask_gpt(self, question):
         """Запрос к Yandex GPT API"""
@@ -79,6 +91,13 @@ class YandexGPTBot:
                 'x-folder-id': self.FOLDER_ID
             }
 
+            rag_answer = self.rag_model.rag_request(question)
+
+            if len(rag_answer) > 20:
+                system_prompt = f'Вот информация, которую система нашла во внутренней БД по запросу пользователя: {rag_answer}. Используй эту информацию для ответа на запрос.'
+            else:
+                system_prompt = 'Система не смогла найти информацию по запросу пользователя. Придумай ответ сам, либо напиши, что ответ не найден.'
+
             data = {
                 "modelUri": f"gpt://{self.FOLDER_ID}/yandexgpt-lite",
                 "completionOptions": {
@@ -87,6 +106,10 @@ class YandexGPTBot:
                     "maxTokens": 2000
                 },
                 "messages": [
+                    {
+                        "role": "system",
+                        "text": system_prompt
+                    },
                     {
                         "role": "user",
                         "text": question
