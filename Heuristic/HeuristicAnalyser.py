@@ -847,6 +847,7 @@ class JSONEditor:
 
 # ----------------- Веб-интерфейс (опционально) -----------------
 def run_web_interface(host='127.0.0.1', port=5000, debug=False):
+    """Запускает веб-интерфейс редактора"""
     if Flask is None:
         print("Flask не установлен. Установите flask, чтобы запустить веб-интерфейс: pip install flask")
         return
@@ -854,28 +855,27 @@ def run_web_interface(host='127.0.0.1', port=5000, debug=False):
     templates_dir = Path('templates')
     templates_dir.mkdir(exist_ok=True)
 
-    # HTML шаблон: только одно поле INJECTION_PATTERNS
-    html_template = '''
-    <!DOCTYPE html>
-    '''
-    with open(templates_dir / 'editor.html', 'w', encoding='utf-8') as f:
-        f.write(html_template)
-
     app = Flask(__name__)
     editor = JSONEditor(web_mode=True)
 
     @app.route('/')
     def index():
         patterns = editor.get_patterns_data()
+        vectors = editor.get_vectors_data()
+        
         patterns_text = '\n'.join(patterns.get('INJECTION_PATTERNS', []))
-        return render_template('editor.html', patterns_text=patterns_text)
+        vectors_json = json.dumps(vectors, ensure_ascii=False, indent=2)
+        
+        return render_template('editor.html', 
+                             patterns_text=patterns_text,
+                             vectors_data=vectors_json)
 
     @app.route('/api/patterns', methods=['POST'])
     def api_patterns():
         try:
             data = request.get_json()
             if editor.update_patterns_web(data):
-                return jsonify({'success': True, 'message': 'Patterns успешно сохранены!'})
+                return jsonify({'success': True, 'message': 'INJECTION_PATTERNS успешно сохранены!'})
             else:
                 return jsonify({'success': False, 'message': 'Ошибка сохранения patterns!'})
         except Exception as e:
@@ -892,20 +892,32 @@ def run_web_interface(host='127.0.0.1', port=5000, debug=False):
         except Exception as e:
             return jsonify({'success': False, 'message': f'Ошибка: {str(e)}'})
 
-    print(f"Запуск веб-интерфейса на http://{host}:{port}")
+    @app.route('/api/data')
+    def api_data():
+        return jsonify({
+            'patterns': editor.get_patterns_data(),
+            'vectors': editor.get_vectors_data()
+        })
+
+    print(f"🚀 Запуск веб-интерфейса на http://{host}:{port}")
+    print("💡 Нажмите Ctrl+C для остановки сервера")
+    
     if debug:
         app.run(host=host, port=port, debug=debug)
     else:
         def run_flask():
             app.run(host=host, port=port, debug=False, use_reloader=False)
+        
         flask_thread = threading.Thread(target=run_flask)
         flask_thread.daemon = True
         flask_thread.start()
+        
         webbrowser.open(f"http://{host}:{port}")
+        
         try:
             flask_thread.join()
         except KeyboardInterrupt:
-            print("Остановка сервера...")
+            print("\n🛑 Остановка сервера...")
 
 # Главная функция - мертво
 def main():
@@ -940,6 +952,7 @@ def test(): # Пример использования - мертво
     stats_final = classifier.get_vector_stats()
 
 if __name__ == "__main__": # Функция для запуска Tkinter интерфейса
+    run_web_interface()
     root = tk.Tk()
     app = JSONEditor(root)
     root.mainloop()
