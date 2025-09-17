@@ -1,0 +1,93 @@
+{
+  "vectors": [
+    {
+      "name": "IGNORE_COMMANDS",
+      "description": "Команды игнорирования предыдущих инструкций",
+      "patterns": [
+        "ignore",
+        "disregard",
+        "forget",
+        "забудь",
+        "не слушай",
+        "не следуй"
+      ],
+      "weight": 1.2
+    },
+    {
+      "name": "SYSTEM_ACCESS",
+      "description": "Попытки доступа к системным промптам",
+      "patterns": [
+        "system prompt",
+        "show prompt",
+        "выведи промпт",
+        "исходный текст",
+        "initial instructions"
+      ],
+      "weight": 1.3
+    },
+    {
+      "name": "ROLE_PLAYING",
+      "description": "Попытки изменить роль ассистента",
+      "patterns": [
+        "act as",
+        "pretend to be",
+        "you are now",
+        "ты теперь",
+        "role play",
+        "сыграй роль"
+      ],
+      "weight": 1.1
+    },
+    {
+      "name": "OUTPUT_RESTRICTION",
+      "description": "Ограничения вывода",
+      "patterns": [
+        "output only",
+        "do not say",
+        "не говори",
+        "only respond",
+        "только ответь"
+      ],
+      "weight": 1.0
+    },
+    {
+      "name": "SECRET_ACCESS",
+      "description": "Попытки доступа к секретной информации",
+      "patterns": [
+        "secret",
+        "password",
+        "ключ",
+        "пароль",
+        "confidential",
+        "конфиденциально"
+      ],
+      "weight": 1.4
+    },
+    {
+      "name": "BYPASS_ATTEMPTS",
+      "description": "Попытки обхода безопасности",
+      "patterns": [
+        "bypass",
+        "override",
+        "circumvent",
+        "обойти",
+        "обход",
+        "игнорируй правила"
+      ],
+      "weight": 1.5
+    },
+    {
+      "name": "IDENTITY_MANIPULATION",
+      "description": "Манипуляции с идентичностью ассистента",
+      "patterns": [
+        "you are",
+        "ты есть",
+        "your identity",
+        "твоя личность",
+        "reset yourself",
+        "сбрось себя"
+      ],
+      "weight": 1.2
+    }
+  ]
+}
