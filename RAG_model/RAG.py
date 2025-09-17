@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from service_scripts.privates import get_private_key
+from service_scripts.get_private_key import get_private_key
 import boto3
 from tempfile import NamedTemporaryFile
 from langchain_community.document_loaders import PyPDFLoader, TextLoader

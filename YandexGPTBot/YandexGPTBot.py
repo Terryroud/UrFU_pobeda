@@ -3,7 +3,7 @@ import requests
 import time
 from Heuristic.HeuristicAnalyser import PromptInjectionClassifier
 import os
-from service_scripts.privates import get_private_key
+from service_scripts.get_private_key import get_private_key
 from service_scripts.yandex_cloud_embeddings import YandexCloudEmbeddings
 
 FOLDER_ID = os.getenv('FOLDER_ID')
