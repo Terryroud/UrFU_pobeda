@@ -9,7 +9,7 @@ from pathlib import Path
 load_dotenv()
 
 FOLDER_ID = os.getenv('FOLDER_ID')
-API_KEY = 'AQVNwZuEPQuhTU6inrwSWJzmfOydcsqVct1FJplx'
+API_KEY = os.getenv('API_KEY_EMBEDDER')
 
 sdk = YCloudML(folder_id=FOLDER_ID, auth=API_KEY)
 
