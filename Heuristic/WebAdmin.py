@@ -1,3 +1,14 @@
+import threading
+import webbrowser
+
+try:
+    from flask import Flask, render_template, request, jsonify
+except Exception:
+    Flask = None
+    render_template = None
+    request = None
+    jsonify = None
+
 if __name__ == "__main__":
     host='127.0.0.1'
     port=5000
