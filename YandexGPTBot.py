@@ -2,9 +2,10 @@ import jwt
 import requests
 import time
 from Heuristic.HeuristicAnalyser import PromptInjectionClassifier
+from langchain_community.vectorstores import FAISS
 import os
-from service_scripts.privates import get_private_key
-from service_scripts.yandex_cloud_embeddings import YandexCloudEmbeddings
+from privates import get_private_key
+from yandex_cloud_embeddings import YandexCloudEmbeddings
 
 FOLDER_ID = os.getenv('FOLDER_ID')
 KEY_ID = os.getenv('KEY_ID')

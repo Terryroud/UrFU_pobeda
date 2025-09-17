@@ -1,11 +1,15 @@
 import logging
+import jwt
+import requests
+import time
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 from datetime import datetime
-from YandexGPTBot.YandexGPTBot import YandexGPTBot
-from RAG_model.RAG import RAG
+from YandexGPTBot import YandexGPTBot
+from RAG import RAG
 
 # Импорт и настройка переменных окружения
 load_dotenv()
@@ -31,7 +35,7 @@ rag_model.create_faiss_index()
 # Создаем экземпляр бота
 yandex_bot = YandexGPTBot(logger, rag_model)
 
-async def start(update: Update):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
     await update.message.reply_text(
         "Привет! Я бот для работы с Yandex GPT. Просто напиши мне свой вопрос"

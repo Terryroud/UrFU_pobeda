@@ -1,6 +1,7 @@
 from langchain.embeddings.base import Embeddings
 from typing import List
-from service_scripts.embedder import get_embedding_textsdk
+import numpy as np
+from embedder import get_embedding_textsdk
 
 
 class YandexCloudEmbeddings(Embeddings):
