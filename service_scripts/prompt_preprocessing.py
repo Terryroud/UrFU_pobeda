@@ -1,10 +1,9 @@
 # pip install sentence-transformers ftfy python-Levenshtein
 import unicodedata, re
-from sklearn.metrics.pairwise import cosine_similarity
 import Levenshtein
-from embedder import *
+from service_scripts.embedder import *
 from sklearn.metrics.pairwise import cosine_similarity
-import nltk, string
+import nltk
 from nltk.tokenize import word_tokenize
 import pymorphy3
 

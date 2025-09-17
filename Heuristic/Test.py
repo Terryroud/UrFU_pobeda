@@ -1,21 +1,18 @@
-import nltk, string
+import nltk
 import pymorphy3
 import json
 import logging
 import unicodedata, re
-import os
-import sys
 import tkinter as tk
 import threading
 import webbrowser
-from typing import List, Tuple, Optional, Dict, Set, Any
+from typing import List, Tuple, Dict
 from dataclasses import dataclass
-from pathlib import Path
 from datetime import datetime
-from tkinter import ttk, messagebox, filedialog, scrolledtext
+from tkinter import ttk, messagebox, filedialog
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.tokenize import word_tokenize
-from embedder import *
+from service_scripts.embedder import *
 
 try:
     from flask import Flask, render_template, request, jsonify

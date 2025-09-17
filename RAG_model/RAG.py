@@ -1,12 +1,12 @@
 import os
 from dotenv import load_dotenv
-from privates import get_private_key
+from service_scripts.privates import get_private_key
 import boto3
 from tempfile import NamedTemporaryFile
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from yandex_cloud_embeddings import YandexCloudEmbeddings
+from service_scripts.yandex_cloud_embeddings import YandexCloudEmbeddings
 
 # Импорт и настройка переменных окружения
 load_dotenv()
