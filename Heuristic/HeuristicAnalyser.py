@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict, Tuple
 
+
 class HeuristicFilter:
     def __init__(self, patterns_file: str = "patterns.json"):
         self.patterns_file = patterns_file
@@ -17,6 +18,7 @@ class HeuristicFilter:
                 return True
         return False
 
+
 @dataclass
 class ThreatVector:
     name: str
@@ -25,10 +27,11 @@ class ThreatVector:
     weight: float = 1.0
     risk_score: float = 0.0
 
+
 class PromptInjectionClassifier:
-    def __init__(self, vectors_file: str = "Heuristic/vectors.json", threshold: float = 0.7,
-                 risk_threshold: float = 0.5, insertion_cost: int = 1,
-                 deletion_cost: int = 1, substitution_cost: int = 1):
+    def __init__(self, vectors_file: str = "vectors.json", threshold: float = 0.6,
+                 risk_threshold: float = 0.7, insertion_cost: int = 1,
+                 deletion_cost: int = 1, substitution_cost: int = 2):
         self.vectors_file = vectors_file
         self.threshold = threshold
         self.risk_threshold = risk_threshold
@@ -195,8 +198,7 @@ class PromptInjectionClassifier:
 
         self._deduplicate_and_sort()
         self._calculate_vector_risk()
-        # return self.calculate_total_risk() > self.risk_threshold
-        return self.calculate_total_risk()
+        return self.calculate_total_risk() > self.risk_threshold
 
     def _deduplicate_and_sort(self):
         unique_patterns = []
