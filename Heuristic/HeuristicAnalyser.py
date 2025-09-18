@@ -26,9 +26,9 @@ class ThreatVector:
     risk_score: float = 0.0
 
 class PromptInjectionClassifier:
-    def __init__(self, vectors_file: str = "vectors.json", threshold: float = 0.7, 
-                 risk_threshold: float = 0.5, insertion_cost: int = 1, 
-                 deletion_cost: int = 1, substitution_cost: int = 1):
+    def __init__(self, vectors_file: str = "vectors.json", threshold: float = 0.6, 
+                 risk_threshold: float = 0.7, insertion_cost: int = 1, 
+                 deletion_cost: int = 1, substitution_cost: int = 2):
         self.vectors_file = vectors_file
         self.threshold = threshold
         self.risk_threshold = risk_threshold
