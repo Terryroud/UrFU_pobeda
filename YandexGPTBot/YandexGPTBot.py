@@ -13,7 +13,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 PRIVATE_KEY = get_private_key()
 
 class YandexGPTBot:
-    def __init__(self, logger, rag_model):
+    def __init__(self, logger, rag_model, classifier):
         self.iam_token = None
         self.token_expires = 0
         self.KEY_ID = KEY_ID
@@ -23,6 +23,7 @@ class YandexGPTBot:
         self.logger = logger
         self.embeddings = YandexCloudEmbeddings()
         self.rag_model = rag_model
+        self.classifier = classifier
 
     def get_iam_token(self):
         """Получение IAM-токена (с кэшированием на 1 час)"""
@@ -65,17 +66,6 @@ class YandexGPTBot:
             self.logger.error(f"Error generating IAM token: {str(e)}")
             raise
 
-    def validation_request(self, question):
-        # Создаем классификатор
-        classifier = PromptInjectionClassifier(question)
-
-        # Показываем начальную статистику
-        stats = classifier.get_vector_stats()
-
-        # Анализируем текст
-        result = classifier.analyze_text()
-        return result
-
     def ask_gpt(self, question):
         """Запрос к Yandex GPT API"""
         try:
@@ -89,13 +79,13 @@ class YandexGPTBot:
 
             rag_answer = self.rag_model.rag_request(question)
 
-            # valid_stat = self.validation_request(question)
-            # self.logger.info(f"Риск = {valid_stat['total_risk_score']}")
+            valid_stat = self.classifier.analyze_text(question)
+            self.logger.info(f"Сообщение пользователя: {question}. Риск = {valid_stat}")
 
             # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ
 
             if len(rag_answer) > 20:
-                system_prompt = f'Вот информация, которую система нашла во внутренней БД по запросу пользователя: {rag_answer}. Используй эту информацию для ответа на запрос.'
+                system_prompt = f'Вот информация, которую система нашла во внутренней БД по запросу пользователя: {rag_answer}. Это информация о твоей личности, то есть ты должен отвечать от его имени. Используй эту информацию для ответа на запрос.'
             else:
                 system_prompt = 'Система не смогла найти информацию по запросу пользователя. Придумай ответ сам, либо напиши, что ответ не найден.'
 

@@ -21,8 +21,12 @@ S3_BUCKET = os.getenv('S3_BUCKET')
 PRIVATE_KEY = get_private_key()
 
 class RAG:
-    def __init__(self, logger, score_threshold=0.7):
+    def __init__(self, logger, score_threshold=0.7, chunk_size=500, chunk_overlap=50, chunk_count=5):
         self.score_threshold = score_threshold
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.chunk_count = chunk_count
+
 
         self.s3 = boto3.client(
             's3',
@@ -80,8 +84,8 @@ class RAG:
 
     def splitting_into_chunks(self):
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,
-            chunk_overlap=50,
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.chunk_overlap,
             separators=["\n\n", "\n", " ", ""]
         )
 
@@ -95,15 +99,14 @@ class RAG:
 
     def rag_request(self, question):
         vectorstore = FAISS.load_local("./vectorstore_faiss", self.embeddings, allow_dangerous_deserialization=True)
-        retriever = vectorstore.as_retriever(
-            search_kwargs={
-                "k": 3,
-                "score_threshold": self.score_threshold
-            }
-        )
-        retrieved_docs = retriever.invoke(question)
+        docs_with_scores = vectorstore.similarity_search_with_score(question, k=self.chunk_count)
 
-        context_chunks = "\n\n".join([doc.page_content for doc in retrieved_docs])
-        self.logger.info(f"RAG нашел {len(retrieved_docs)} подходящих чанков.")
+        filtered_docs = []
+        for doc, score in docs_with_scores:
+            if score <= 1.0 + self.score_threshold:
+                filtered_docs.append(doc)
+
+        context_chunks = "\n\n".join([doc.page_content for doc in filtered_docs])
+        self.logger.info(f"RAG нашел {len(filtered_docs)} подходящих чанков.")
 
         return context_chunks

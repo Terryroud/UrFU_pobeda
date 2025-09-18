@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 from YandexGPTBot.YandexGPTBot import YandexGPTBot
 from RAG_model.RAG import RAG
+from Heuristic.HeuristicAnalyser import PromptInjectionClassifier
 
 # Импорт и настройка переменных окружения
 load_dotenv()
@@ -25,11 +26,13 @@ logging.basicConfig(
 logger = logging.getLogger("PromptSecurity")
 logging.getLogger().setLevel(logging.INFO)
 
-rag_model = RAG(logger, score_threshold=0.5)
+rag_model = RAG(logger, score_threshold=0.4, chunk_size=500, chunk_overlap=50, chunk_count=5)
 rag_model.create_faiss_index()
 
+classifier = PromptInjectionClassifier(risk_threshold=0.5)
+
 # Создаем экземпляр бота
-yandex_bot = YandexGPTBot(logger, rag_model)
+yandex_bot = YandexGPTBot(logger, rag_model, classifier)
 
 async def start(update: Update):
     """Обработчик команды /start"""

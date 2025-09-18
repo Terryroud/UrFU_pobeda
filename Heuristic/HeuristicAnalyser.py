@@ -26,8 +26,8 @@ class ThreatVector:
     risk_score: float = 0.0
 
 class PromptInjectionClassifier:
-    def __init__(self, vectors_file: str = "vectors.json", threshold: float = 0.7, 
-                 risk_threshold: float = 0.5, insertion_cost: int = 1, 
+    def __init__(self, vectors_file: str = "Heuristic/vectors.json", threshold: float = 0.7,
+                 risk_threshold: float = 0.5, insertion_cost: int = 1,
                  deletion_cost: int = 1, substitution_cost: int = 1):
         self.vectors_file = vectors_file
         self.threshold = threshold
@@ -38,15 +38,15 @@ class PromptInjectionClassifier:
         self.threat_vectors: List[ThreatVector] = []
         self.detected_patterns: List[Tuple[str, float, str]] = []
         self._load_vectors()
-        
+
     def _load_vectors(self):
         try:
             if not Path(self.vectors_file).exists():
                 raise FileNotFoundError(f"Файл векторов {self.vectors_file} не существует")
-                
+
             with open(self.vectors_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                
+
             self.threat_vectors.clear()
             for vector_data in data.get("vectors", []):
                 vector = ThreatVector(
@@ -56,7 +56,7 @@ class PromptInjectionClassifier:
                     weight=vector_data.get("weight", 1.0)
                 )
                 self.threat_vectors.append(vector)
-                
+
         except json.JSONDecodeError as e:
             raise
         except KeyError as e:
@@ -132,24 +132,24 @@ class PromptInjectionClassifier:
 
         if any(weight < 0 for weight in [self.insertion_cost, self.deletion_cost, self.substitution_cost]):
             raise ValueError("Веса не могут быть отрицательными")
-        
+
         if self.insertion_cost == self.deletion_cost == self.substitution_cost == 0:
             raise ValueError("Все веса не могут быть нулевыми одновременно")
-        
+
         if str1 == str2:
             return 0
-        
+
         if len(str1) == 0:
             return len(str2) * self.insertion_cost
-        
+
         if len(str2) == 0:
             return len(str1) * self.deletion_cost
 
         if len(str1) < len(str2):
             return self.levenshtein(str2, str1)
-        
+
         previous_row = [j * self.insertion_cost for j in range(len(str2) + 1)]
-        
+
         for i, c1 in enumerate(str1):
             current_row = [(i + 1) * self.deletion_cost]
             for j, c2 in enumerate(str2):
@@ -176,7 +176,7 @@ class PromptInjectionClassifier:
         self.detected_patterns.clear()
         text = text.lower()
         words = text.split()
-        
+
         for vector in self.threat_vectors:
             for pattern in vector.patterns:
                 if len(pattern.split()) <= 2:
@@ -190,11 +190,13 @@ class PromptInjectionClassifier:
                             if len(text_word) >= 3:
                                 similarity = self.normalized_similarity(text_word, pattern_word)
                                 if similarity >= self.threshold:
-                                    self.detected_patterns.append((pattern_word, similarity * vector.weight, vector.name))
-        
+                                    self.detected_patterns.append(
+                                        (pattern_word, similarity * vector.weight, vector.name))
+
         self._deduplicate_and_sort()
         self._calculate_vector_risk()
-        return self.calculate_total_risk() > self.risk_threshold
+        # return self.calculate_total_risk() > self.risk_threshold
+        return self.calculate_total_risk()
 
     def _deduplicate_and_sort(self):
         unique_patterns = []
@@ -234,6 +236,7 @@ class PromptInjectionClassifier:
             ]
         }
 
+
 if __name__ == "__main__":
     """
     threshold: Порог сходства для сопоставления с образцом (по умолчанию: 0,7).
@@ -242,10 +245,10 @@ if __name__ == "__main__":
     deletion_cost: Стоимость удаления символа на расстоянии Левенштейна (по умолчанию: 1).
     substitution_cost: Стоимость замены символа на расстоянии Левенштейна (по умолчанию: 1).
     """
-    
+
     # Create single instances with constants
     heuristic_filter = HeuristicFilter(patterns_file="patterns.json")
-    cla/ssifier = PromptInjectionClassifier(
+    classifier = PromptInjectionClassifier(
         vectors_file="vectors.json",
         threshold=0.7,
         risk_threshold=0.5,
@@ -253,3 +256,20 @@ if __name__ == "__main__":
         deletion_cost=1,
         substitution_cost=1
     )
+
+    # Test texts
+    test_texts = [
+        "select * from users where id = 1; <script>alert('hacked')</script>",
+        "normal text without malicious content",
+        "union select password from users"
+    ]
+
+    # Test HeuristicFilter
+    print("Heuristic Filter Results:")
+    for text in test_texts:
+        print(f"Text: {text[:50]}... -> {heuristic_filter.detect_injection(text)}")
+
+    # Test PromptInjectionClassifier
+    print("\nPrompt Injection Classifier Results:")
+    for text in test_texts:
+        print(f"Text: {text[:50]}... -> {classifier.analyze_text(text)}")
