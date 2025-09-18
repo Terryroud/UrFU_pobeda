@@ -1,35 +1,19 @@
-import logging
+import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 import os
 from dotenv import load_dotenv
-from datetime import datetime
-from YandexGPTBot.YandexGPTBot import YandexGPTBot
-from RAG_model.RAG import RAG
 
 # Импорт и настройка переменных окружения
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
-# Настройка логирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(f"log/{datetime.now().strftime('%Y%m%d_%H%M%S')}.log", encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
-
-logger = logging.getLogger("PromptSecurity")
-logging.getLogger().setLevel(logging.INFO)
-
-rag_model = RAG(logger, score_threshold=0.7)
-rag_model.create_faiss_index()
-
-# Создаем экземпляр бота
-yandex_bot = YandexGPTBot(logger, rag_model)
+def send_log(level, message, service="main_service"):
+    try:
+        requests.post("http://localhost:8001/log", json={"level": level, "message": message, "service": service}, timeout=5)
+    except:
+        pass
 
 async def start(update: Update):
     """Обработчик команды /start"""
@@ -53,11 +37,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             action="typing"
         )
 
-        response = yandex_bot.ask_gpt(user_message)
-        await update.message.reply_text(response)
+        # Call YandexGPTBot microservice
+        response = requests.post("http://localhost:8003/ask_gpt", json={"question": user_message}, timeout=60)
+        if response.status_code == 200:
+            answer = response.json().get("response", "Извините, ответ не получен.")
+        else:
+            answer = "Извините, произошла ошибка при обработке вашего запроса."
+            send_log("ERROR", f"YandexGPTBot service error: {response.text}")
+
+        await update.message.reply_text(answer)
 
     except Exception as e:
-        logger.error(f"Error handling message: {str(e)}")
+        send_log("ERROR", f"Error handling message: {str(e)}")
         await update.message.reply_text(
             "Извините, произошла ошибка при обработке вашего запроса. "
             "Пожалуйста, попробуйте позже."
@@ -66,7 +57,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик ошибок"""
-    logger.error(f"Update {update} caused error {context.error}")
+    send_log("ERROR", f"Update {update} caused error {context.error}")
     if update and update.effective_message:
         await update.effective_message.reply_text(
             "Произошла ошибка. Пожалуйста, попробуйте позже."

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  logging_service:
+    build:
+      context: ./logging_service
+    ports:
+      - "8001:8001"
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+
+  rag_service:
+    build:
+      context: ./rag_service
+    ports:
+      - "8002:8002"
+    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+    depends_on:
+      - logging_service
+
+  yandex_gpt_service:
+    build:
+      context: ./yandex_gpt_service
+    ports:
+      - "8003:8003"
+    command: uvicorn main:app --host 0.0.0.0 --port 8003 --reload
+    depends_on:
+      - logging_service
+      - rag_service
+
+  main_bot:
+    build:
+      context: .
+    ports:
+      - "8443:8443"
+    command: python3 main.py
+    depends_on:
+      - logging_service
+      - rag_service
+      - yandex_gpt_service

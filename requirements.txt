@@ -12,3 +12,5 @@ langchain==0.3.27
 boto3==1.40.32
 yandex_cloud_ml_sdk==0.15.0
 faiss-cpu==1.12.0
+fastapi==0.115.6
+uvicorn==0.32.1
