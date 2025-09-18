@@ -26,7 +26,7 @@ class ThreatVector:
     risk_score: float = 0.0
 
 class PromptInjectionClassifier:
-    def __init__(self, vectors_file: str = "vectors.json", threshold: float = 0.6, 
+    def __init__(self, vectors_file: str = "Heuristic/vectors.json", threshold: float = 0.6, 
                  risk_threshold: float = 0.7, insertion_cost: int = 1, 
                  deletion_cost: int = 1, substitution_cost: int = 2):
         self.vectors_file = vectors_file
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     
     # Create single instances with constants
     heuristic_filter = HeuristicFilter(patterns_file="patterns.json")
-    cla/ssifier = PromptInjectionClassifier(
+    classifier = PromptInjectionClassifier(
         vectors_file="vectors.json",
         threshold=0.7,
         risk_threshold=0.5,
