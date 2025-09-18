@@ -4,8 +4,8 @@ import os
 def get_private_key():
     key_path = Path(os.getenv('PRIVATE_KEY'))
 
-    if not key_path.is_absolute():
-        key_path = Path(__file__).parent / key_path
+    # if not key_path.is_absolute():
+    #     key_path = Path(__file__).parent / key_path
 
     if not key_path.exists():
         raise FileNotFoundError(f"Файл с приватным ключом не найден: {key_path}")

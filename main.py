@@ -17,7 +17,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(f"log/{datetime.now().strftime('%Y%m%d_%H%M%S')}.log", encoding='utf-8'),
+        logging.FileHandler(f"prompt_security_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log", encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -25,7 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger("PromptSecurity")
 logging.getLogger().setLevel(logging.INFO)
 
-rag_model = RAG(logger, score_threshold=0.7)
+rag_model = RAG(logger, score_threshold=0.5)
 rag_model.create_faiss_index()
 
 # Создаем экземпляр бота
@@ -36,7 +36,6 @@ async def start(update: Update):
     await update.message.reply_text(
         "Привет! Я бот для работы с Yandex GPT. Просто напиши мне свой вопрос"
     )
-
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка текстовых сообщений"""

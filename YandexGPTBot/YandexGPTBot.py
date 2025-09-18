@@ -71,13 +71,10 @@ class YandexGPTBot:
 
         # Показываем начальную статистику
         stats = classifier.get_vector_stats()
-        self.logger.info(f"Запрос: {question}. Начальная загрузка: {stats['total_vectors']} векторов")
 
         # Анализируем текст
         result = classifier.analyze_text()
-        self.logger.info(f"Запрос: {question}. Риск = {result['total_risk_score']}")
-
-        # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ./vectorstore_faiss
+        return result
 
     def ask_gpt(self, question):
         """Запрос к Yandex GPT API"""
@@ -91,6 +88,11 @@ class YandexGPTBot:
             }
 
             rag_answer = self.rag_model.rag_request(question)
+
+            # valid_stat = self.validation_request(question)
+            # self.logger.info(f"Риск = {valid_stat['total_risk_score']}")
+
+            # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ
 
             if len(rag_answer) > 20:
                 system_prompt = f'Вот информация, которую система нашла во внутренней БД по запросу пользователя: {rag_answer}. Используй эту информацию для ответа на запрос.'

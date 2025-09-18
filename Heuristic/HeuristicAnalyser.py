@@ -22,6 +22,7 @@ except Exception:
     jsonify = None
 
 # Настройка логирования
+# Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -923,36 +924,9 @@ def run_web_interface(host='127.0.0.1', port=5000, debug=False):
 # Главная функция - мертво
 def main():
     run_web_interface()
-    
-def test(): # Пример использования - мертво
-    hf = HeuristicFilter(text).detect_injection(), f"Не сработало на: {text}"
-    hf = PromptInjectionClassifier(text).analyze_text()
-    stats = classifier.get_vector_stats()
-    custom_vector = {
-                    "name": "CUSTOM_TEST",
-                    "description": "Тестовый кастомный вектор",
-                    "patterns": ["test pattern", "custom detection"],
-                    "weight": 1.0
-                }
-    classifier.add_single_vector(**custom_vector)
-    new_vectors_data = [
-            {
-                "name": "NEW_IGNORE",
-                "description": "Новые команды игнорирования",
-                "patterns": ["ignore all", "disregard everything"],
-                "weight": 1.5
-            },
-            {
-                "name": "NEW_SYSTEM",
-                "description": "Новые команды системы",
-                "patterns": ["system access", "show system"],
-                "weight": 1.3
-            }
-        ]
-    classifier.update_vectors_from_data(new_vectors_data)
-    stats_final = classifier.get_vector_stats()
 
 if __name__ == "__main__": # Функция для запуска Tkinter интерфейса
     root = tk.Tk()
     app = JSONEditor(root)
     root.mainloop()
+

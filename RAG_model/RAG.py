@@ -104,6 +104,6 @@ class RAG:
         retrieved_docs = retriever.invoke(question)
 
         context_chunks = "\n\n".join([doc.page_content for doc in retrieved_docs])
-        self.logger.info(f"RAG нашел {len(retrieved_docs)} подходящих чанков. Ответ RAG: {context_chunks}")
+        self.logger.info(f"RAG нашел {len(retrieved_docs)} подходящих чанков.")
 
         return context_chunks
