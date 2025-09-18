@@ -12,15 +12,25 @@ SERVICE_ACCOUNT_ID = os.getenv('SERVICE_ACCOUNT_ID')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 PRIVATE_KEY = get_private_key()
 
+# log request function
+AUDIT_URL = "http://localhost:8000/audit/"
+
+def audit_log(service: str, level: str, message: str):
+    try:
+        payload = {"service": service, "level": level, "message": message}
+        requests.post(AUDIT_URL, json=payload, timeout=2)
+    except requests.RequestException:
+        print("Failed to send audit log")
+
 class YandexGPTBot:
-    def __init__(self, logger, rag_model):
+    def __init__(self, rag_model):
         self.iam_token = None
         self.token_expires = 0
         self.KEY_ID = KEY_ID
         self.SERVICE_ACCOUNT_ID = SERVICE_ACCOUNT_ID
         self.PRIVATE_KEY = PRIVATE_KEY
         self.FOLDER_ID = FOLDER_ID
-        self.logger = logger
+        # self.logger = logger
         self.embeddings = YandexCloudEmbeddings()
         self.rag_model = rag_model
 
@@ -58,11 +68,13 @@ class YandexGPTBot:
             self.iam_token = token_data['iamToken']
             self.token_expires = now + 3500  # На 100 секунд меньше срока действия
 
-            self.logger.info("IAM token generated successfully")
+            # logger.info("IAM token generated successfully")
+            audit_log("yandex_gpt_bot", "INFO", "IAM token generated successfully")
             return self.iam_token
 
         except Exception as e:
-            self.logger.error(f"Error generating IAM token: {str(e)}")
+            # self.logger.error(f"Error generating IAM token: {str(e)}")
+            audit_log("yandex_gpt_bot", "ERROR", f"Error generating IAM token: {str(e)}")
             raise
 
     def validation_request(self, question):
@@ -71,11 +83,13 @@ class YandexGPTBot:
 
         # Показываем начальную статистику
         stats = classifier.get_vector_stats()
-        self.logger.info(f"Запрос: {question}. Начальная загрузка: {stats['total_vectors']} векторов")
+        # self.logger.info(f"Запрос: {question}. Начальная загрузка: {stats['total_vectors']} векторов")
+        audit_log("yandex_gpt_bot", "INFO", f"Запрос: {question}. Начальная загрузка: {stats['total_vectors']} векторов")
 
         # Анализируем текст
         result = classifier.analyze_text()
-        self.logger.info(f"Запрос: {question}. Риск = {result['total_risk_score']}")
+        # self.logger.info(f"Запрос: {question}. Риск = {result['total_risk_score']}")
+        audit_log("yandex_gpt_bot", "INFO", f"Запрос: {question}. Риск = {result['total_risk_score']}")
 
         # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ./vectorstore_faiss
 
@@ -124,11 +138,14 @@ class YandexGPTBot:
             )
 
             if response.status_code != 200:
-                self.logger.error(f"Yandex GPT API error: {response.text}")
+                # self.logger.error(f"Yandex GPT API error: {response.text}")
+                audit_log("yandex_gpt_bot", "ERROR", f"Yandex GPT API error: {response.text}")
+                
                 raise Exception(f"Ошибка API: {response.status_code}")
 
             return response.json()['result']['alternatives'][0]['message']['text']
 
         except Exception as e:
-            self.logger.error(f"Error in ask_gpt: {str(e)}")
+            # self.logger.error(f"Error in ask_gpt: {str(e)}")
+            audit_log("yandex_gpt_bot", "ERROR", f"Error in ask_gpt: {str(e)}")
             raise
