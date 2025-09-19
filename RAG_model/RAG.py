@@ -1,4 +1,5 @@
 import os
+from audit import audit_log
 from dotenv import load_dotenv
 from service_scripts.get_private_key import get_private_key
 import boto3
@@ -22,7 +23,7 @@ S3_BUCKET = os.getenv('S3_BUCKET')
 PRIVATE_KEY = get_private_key()
 
 class RAG:
-    def __init__(self, logger, score_threshold=0.7, chunk_size=500, chunk_overlap=50, chunk_count=5):
+    def __init__(self, score_threshold=0.7, chunk_size=500, chunk_overlap=50, chunk_count=5):
         self.score_threshold = score_threshold
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
@@ -36,7 +37,6 @@ class RAG:
             aws_secret_access_key=S3_SECRET_KEY
         )
         self.embeddings = YandexCloudEmbeddings()
-        self.logger = logger
 
     def load_document_from_s3(self, bucket_name: str, path: str):
         with NamedTemporaryFile(delete=False, suffix=os.path.splitext(path)[1]) as tmp_file:
@@ -98,7 +98,7 @@ class RAG:
     def create_faiss_index(self):
         vectorstore = FAISS.from_documents(self.splitting_into_chunks(), self.embeddings)
         vectorstore.save_local("./vectorstore_faiss")
-        self.logger.info("Faiss create successful")
+        audit_log("rag", "INFO", "Faiss create successful")
 
     def rag_request(self, question):
         vectorstore = FAISS.load_local("./vectorstore_faiss", self.embeddings, allow_dangerous_deserialization=True)
@@ -110,6 +110,6 @@ class RAG:
                 filtered_docs.append(doc)
 
         context_chunks = "\n\n".join([doc.page_content for doc in filtered_docs])
-        self.logger.info(f"RAG нашел {len(filtered_docs)} подходящих чанков.")
+        audit_log("rag", "INFO", f"RAG нашел {len(filtered_docs)} подходящих чанков.")
 
         return context_chunks
