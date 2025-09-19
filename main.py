@@ -1,5 +1,5 @@
 import logging
-import requests
+from audit import audit_log
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 import os
@@ -14,16 +14,8 @@ load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
-# Настройка логирования
-AUDIT_URL = "http://localhost:8000/audit/"
-
-def audit_log(service: str, level: str, message: str):
-    try:
-        payload = {"service": service, "level": level, "message": message}
-        requests.post(AUDIT_URL, json=payload, timeout=2)
-    except requests.RequestException:
-        print("Failed to send audit log")
-
+# Настройка логирования (to be deleted)
+# """
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -32,7 +24,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-
+# """
 # logger = logging.getLogger("PromptSecurity")
 # logging.getLogger().setLevel(logging.INFO)
 
