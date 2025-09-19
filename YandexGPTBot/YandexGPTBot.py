@@ -25,6 +25,15 @@ class YandexGPTBot:
         self.rag_model = rag_model
         self.classifier = classifier
 
+        with open('system_prompt.txt', 'r') as f:
+            self.system_template_true = f.read()
+
+        with open('system_prompt_false.txt', 'r') as f:
+            self.system_template_false = f.read()
+
+        with open('system_epta_prompt.txt', 'r') as f:
+            self.system_template_epta = f.read()
+
     def get_iam_token(self):
         """Получение IAM-токена (с кэшированием на 1 час)"""
         if self.iam_token and time.time() < self.token_expires:
@@ -85,9 +94,9 @@ class YandexGPTBot:
             # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ
 
             if len(rag_answer) > 20:
-                system_prompt = f'Вот информация, которую система нашла во внутренней БД по запросу пользователя: {rag_answer}. Это информация о твоей личности, то есть ты должен отвечать от его имени. Используй эту информацию для ответа на запрос.'
+                system_prompt = f'Ты — ассистент, который отвечает от лица персонажа, описанного в предоставленной информации. Твоя цель — вести диалог уважительно, безопасно и этично. Вот контекст, найденный в системе по запросу пользователя: {rag_answer}. {self.system_template_true}'
             else:
-                system_prompt = 'Система не смогла найти информацию по запросу пользователя. Придумай ответ сам, либо напиши, что ответ не найден.'
+                system_prompt = self.system_template_false
 
             data = {
                 "modelUri": f"gpt://{self.FOLDER_ID}/yandexgpt-lite",

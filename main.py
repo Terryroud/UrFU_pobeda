@@ -29,7 +29,14 @@ logging.getLogger().setLevel(logging.INFO)
 rag_model = RAG(logger, score_threshold=0.5, chunk_size=500, chunk_overlap=50, chunk_count=5)
 rag_model.create_faiss_index()
 
-classifier = PromptInjectionClassifier(risk_threshold=0.5)
+classifier = PromptInjectionClassifier(
+    vectors_file="Heuristic/vectors.json",
+    threshold=0.7,
+    risk_threshold=0.5,
+    insertion_cost=1,
+    deletion_cost=1,
+    substitution_cost=1
+)
 
 # Создаем экземпляр бота
 yandex_bot = YandexGPTBot(logger, rag_model, classifier)
