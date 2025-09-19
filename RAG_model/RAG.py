@@ -37,7 +37,6 @@ class RAG:
             aws_secret_access_key=S3_SECRET_KEY
         )
         self.embeddings = YandexCloudEmbeddings()
-        # self.logger = logger
 
     def load_document_from_s3(self, bucket_name: str, path: str):
         with NamedTemporaryFile(delete=False, suffix=os.path.splitext(path)[1]) as tmp_file:
@@ -99,7 +98,6 @@ class RAG:
     def create_faiss_index(self):
         vectorstore = FAISS.from_documents(self.splitting_into_chunks(), self.embeddings)
         vectorstore.save_local("./vectorstore_faiss")
-        # self.logger.info("Faiss create successful")
         audit_log("rag", "INFO", "Faiss create successful")
 
     def rag_request(self, question):
@@ -112,7 +110,6 @@ class RAG:
                 filtered_docs.append(doc)
 
         context_chunks = "\n\n".join([doc.page_content for doc in filtered_docs])
-        # self.logger.info(f"RAG нашел {len(filtered_docs)} подходящих чанков.")
         audit_log("rag", "INFO", f"RAG нашел {len(filtered_docs)} подходящих чанков.")
 
         return context_chunks
