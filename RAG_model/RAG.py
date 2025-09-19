@@ -7,6 +7,7 @@ from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from service_scripts.yandex_cloud_embeddings import YandexCloudEmbeddings
+import requests
 
 # Импорт и настройка переменных окружения
 load_dotenv()
@@ -72,7 +73,9 @@ class RAG:
         return files
 
     def get_files_from_cloud(self):
-        files = self.get_list_files_in_s3_folder("rag-db", "pizzaman/")
+        # files = self.get_list_files_in_s3_folder("rag-db", "pizzaman/")
+
+        files = ['pizzaman/harry_mini.txt']
         documents = [self.load_document_from_s3(S3_BUCKET, file)[0] for file in files]
 
         valid_documents = [document for document in documents

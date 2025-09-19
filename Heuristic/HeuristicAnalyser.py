@@ -59,6 +59,7 @@ class PromptInjectionClassifier:
                     weight=vector_data.get("weight", 1.0)
                 )
                 self.threat_vectors.append(vector)
+            print(self.threat_vectors)
 
         except json.JSONDecodeError as e:
             raise

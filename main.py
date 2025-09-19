@@ -26,7 +26,7 @@ logging.basicConfig(
 logger = logging.getLogger("PromptSecurity")
 logging.getLogger().setLevel(logging.INFO)
 
-rag_model = RAG(logger, score_threshold=0.4, chunk_size=500, chunk_overlap=50, chunk_count=5)
+rag_model = RAG(logger, score_threshold=0.5, chunk_size=500, chunk_overlap=50, chunk_count=5)
 rag_model.create_faiss_index()
 
 classifier = PromptInjectionClassifier(risk_threshold=0.5)
