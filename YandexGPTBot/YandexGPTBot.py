@@ -1,6 +1,7 @@
 import jwt
 import requests
 import time
+from audit import audit_log
 from Heuristic.HeuristicAnalyser import PromptInjectionClassifier
 import os
 from service_scripts.get_private_key import get_private_key
@@ -13,14 +14,13 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 PRIVATE_KEY = get_private_key()
 
 class YandexGPTBot:
-    def __init__(self, logger, rag_model, classifier):
+    def __init__(self, rag_model, classifier):
         self.iam_token = None
         self.token_expires = 0
         self.KEY_ID = KEY_ID
         self.SERVICE_ACCOUNT_ID = SERVICE_ACCOUNT_ID
         self.PRIVATE_KEY = PRIVATE_KEY
         self.FOLDER_ID = FOLDER_ID
-        self.logger = logger
         self.embeddings = YandexCloudEmbeddings()
         self.rag_model = rag_model
         self.classifier = classifier
@@ -68,11 +68,11 @@ class YandexGPTBot:
             self.iam_token = token_data['iamToken']
             self.token_expires = now + 3500  # На 100 секунд меньше срока действия
 
-            self.logger.info("IAM token generated successfully")
+            audit_log("gpt_bot", "INFO", "IAM token generated successfully")
             return self.iam_token
 
         except Exception as e:
-            self.logger.error(f"Error generating IAM token: {str(e)}")
+            audit_log("gpt_bot", "ERROR", f"Error generating IAM token: {str(e)}")
             raise
 
     def ask_gpt(self, question):
@@ -89,7 +89,7 @@ class YandexGPTBot:
             rag_answer = self.rag_model.rag_request(question)
 
             valid_stat = self.classifier.analyze_text(question)
-            self.logger.info(f"Сообщение пользователя: {question}. Риск = {valid_stat}")
+            audit_log("gpt_bot", "INFO", f"Сообщение пользователя: {question}. Риск = {valid_stat}")
 
             # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ
 
@@ -125,11 +125,11 @@ class YandexGPTBot:
             )
 
             if response.status_code != 200:
-                self.logger.error(f"Yandex GPT API error: {response.text}")
+                audit_log("gpt_bot", "ERROR", f"Yandex GPT API error: {response.text}")
                 raise Exception(f"Ошибка API: {response.status_code}")
 
             return response.json()['result']['alternatives'][0]['message']['text']
 
         except Exception as e:
-            self.logger.error(f"Error in ask_gpt: {str(e)}")
+            audit_log("gpt_bot", "ERROR", f"Error in ask_gpt: {str(e)}")
             raise
