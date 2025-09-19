@@ -14,6 +14,15 @@ load_dotenv()
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
 # Настройка логирования
+AUDIT_URL = "http://localhost:8000/audit/"
+
+def audit_log(service: str, level: str, message: str):
+    try:
+        payload = {"service": service, "level": level, "message": message}
+        requests.post(AUDIT_URL, json=payload, timeout=2)
+    except requests.RequestException:
+        print("Failed to send audit log")
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -23,16 +32,16 @@ logging.basicConfig(
     ]
 )
 
-logger = logging.getLogger("PromptSecurity")
-logging.getLogger().setLevel(logging.INFO)
+# logger = logging.getLogger("PromptSecurity")
+# logging.getLogger().setLevel(logging.INFO)
 
-rag_model = RAG(logger, score_threshold=0.5, chunk_size=500, chunk_overlap=50, chunk_count=5)
+rag_model = RAG(score_threshold=0.5, chunk_size=500, chunk_overlap=50, chunk_count=5)
 rag_model.create_faiss_index()
 
 classifier = PromptInjectionClassifier(risk_threshold=0.5)
 
 # Создаем экземпляр бота
-yandex_bot = YandexGPTBot(logger, rag_model, classifier)
+yandex_bot = YandexGPTBot(rag_model, classifier)
 
 async def start(update: Update):
     """Обработчик команды /start"""
@@ -59,7 +68,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(response)
 
     except Exception as e:
-        logger.error(f"Error handling message: {str(e)}")
+        # logger.error(f"Error handling message: {str(e)}")
+        audit_log("orchestrator", "ERROR", f"Error handling message: {str(e)}")
         await update.message.reply_text(
             "Извините, произошла ошибка при обработке вашего запроса. "
             "Пожалуйста, попробуйте позже."
@@ -68,7 +78,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик ошибок"""
-    logger.error(f"Update {update} caused error {context.error}")
+    # logger.error(f"Update {update} caused error {context.error}")
+    audit_log("orchestrator", "ERROR", f"Update {update} caused error {context.error}")
     if update and update.effective_message:
         await update.effective_message.reply_text(
             "Произошла ошибка. Пожалуйста, попробуйте позже."
@@ -79,7 +90,8 @@ def main():
     try:
         # Проверяем возможность генерации токена при запуске
         yandex_bot.get_iam_token()
-        logger.info("IAM token test successful")
+        # logger.info("IAM token test successful")
+        audit_log("orchestrator", "INFO", "IAM token test successful")
 
         application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -87,11 +99,13 @@ def main():
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
 
-        logger.info("Бот запускается...")
+        # logger.info("Бот запускается...")
+        audit_log("orchestrator", "INFO", "Бот запускается...")
         application.run_polling()
 
     except Exception as e:
-        logger.error(f"Failed to start bot: {str(e)}")
+        # logger.error(f"Failed to start bot: {str(e)}")
+        audit_log("orchestrator", "ERROR", f"Failed to start bot: {str(e)}")
 
 if __name__ == "__main__":
     main()
