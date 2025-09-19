@@ -13,7 +13,7 @@ load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
-rag_model = RAG(score_threshold=0.5, chunk_size=500, chunk_overlap=50, chunk_count=5)
+rag_model = RAG(score_threshold=0.5, chunk_size=500, chunk_overlap=150, chunk_count=5)
 rag_model.create_faiss_index()
 
 classifier = PromptInjectionClassifier(
