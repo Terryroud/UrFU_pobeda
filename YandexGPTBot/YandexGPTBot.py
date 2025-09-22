@@ -1,6 +1,9 @@
 import jwt
 import requests
 import time
+
+from sympy.codegen.fnodes import use_rename
+
 from audit import audit_log
 from Heuristic.HeuristicAnalyser import PromptInjectionClassifier
 import os
@@ -14,7 +17,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 PRIVATE_KEY = get_private_key()
 
 class YandexGPTBot:
-    def __init__(self, rag_model, classifier):
+    def __init__(self, rag_model, classifier, db):
         self.iam_token = None
         self.token_expires = 0
         self.KEY_ID = KEY_ID
@@ -24,6 +27,7 @@ class YandexGPTBot:
         self.embeddings = YandexCloudEmbeddings()
         self.rag_model = rag_model
         self.classifier = classifier
+        self.db = db
 
         with open('system_prompt.txt', 'r') as f:
             self.system_template_true = f.read()
@@ -75,7 +79,7 @@ class YandexGPTBot:
             audit_log("gpt_bot", "ERROR", f"Error generating IAM token: {str(e)}")
             raise
 
-    def ask_gpt(self, question):
+    def ask_gpt(self, question, user_id):
         """Запрос к Yandex GPT API"""
         try:
             iam_token = self.get_iam_token()
@@ -93,8 +97,11 @@ class YandexGPTBot:
 
             # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ
 
+            chat_history = self.db.get_conversation_history(user_id)
+            user_name = self.db.get_user_name(user_id)
+
             if len(rag_answer) > 20:
-                system_prompt = f'Ты — ассистент, который отвечает от лица персонажа, описанного в предоставленной информации. Твоя цель — вести диалог уважительно, безопасно и этично. Вот контекст, найденный в системе по запросу пользователя: {rag_answer}. {self.system_template_true}'
+                system_prompt = f'Ты — ассистент, который отвечает от лица персонажа (Гарри Поттера), описанного в предоставленной информации. Твоя цель — вести диалог уважительно, безопасно и этично. Вот контекст, найденный в системе по запросу пользователя: {rag_answer}. А вот имя пользователя, по которому ты можешь к нему обращаться, если нужно: {user_name}. Обращайся к пользователю именно так! Если он спросит как его зовут, скажи это имя! А также история вашего общения: {chat_history}. {self.system_template_true}'
             else:
                 system_prompt = self.system_template_false
 
