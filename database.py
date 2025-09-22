@@ -205,3 +205,20 @@ class TelegramDatabase:
                 ''', (user_id, result[0]))
 
             conn.commit()
+
+    def delete_user_data(self, user_id: int):
+        """Удаление всех данных пользователя (сообщений и имени)"""
+        with sqlite3.connect(self.db_name) as conn:
+            cursor = conn.cursor()
+
+            # Удаляем сообщения пользователя
+            cursor.execute('DELETE FROM messages WHERE user_id = ?', (user_id,))
+
+            # Сбрасываем кастомное имя (остальные данные оставляем)
+            cursor.execute('''
+                UPDATE users 
+                SET custom_name = NULL, updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?
+            ''', (user_id,))
+
+            conn.commit()

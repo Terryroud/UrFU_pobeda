@@ -53,6 +53,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     terms_text = (
         "👋 Добро пожаловать!\n\n"
         "Ознакомься с [Правилами](https://github.com/Terryroud/UrFU_pobeda/blob/main/Privacy_Policy.md) "
+        "и [Согласием](https://github.com/Terryroud/UrFU_pobeda/blob/main/Agreement.md)"
         "и нажми кнопку ниже чтобы начать."
     )
 
@@ -166,6 +167,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Меню с кнопками"""
     keyboard = [
         [InlineKeyboardButton("✏️ Изменить имя", callback_data="change_name")],
+        [InlineKeyboardButton("🗑️ Удалить аккаунт", callback_data="delete_account")],
         [InlineKeyboardButton("ℹ️ О боте", callback_data="about")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -192,6 +194,16 @@ async def handle_menu_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE
         await context.bot.send_message(
             chat_id=query.message.chat_id,
             text="Я Гарри Поттер! И у меня есть жена((("
+        )
+
+    elif query.data == "delete_account":  # НОВЫЙ ОБРАБОТЧИК
+        user_id = query.from_user.id
+        db.delete_user_data(user_id)
+
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text="✅ Все твои данные удалены! История очищена.\n\n"
+                 "Если захочешь пообщаться снова - просто напиши мне 😊"
         )
 
 
@@ -229,7 +241,7 @@ def main():
         application.add_handler(conv_handler)
         application.add_handler(CommandHandler("start", start))
         application.add_handler(CommandHandler("menu", menu))  # ДОБАВЬТЕ ЭТУ СТРОКУ
-        application.add_handler(CallbackQueryHandler(handle_menu_buttons, pattern="^(change_name|about)$"))  # ДОБАВЬТЕ ЭТУ СТРОКУ
+        application.add_handler(CallbackQueryHandler(handle_menu_buttons, pattern="^(change_name|about|delete_account)$"))  # ОБНОВЛЕННЫЙ ПАТТЕРН
 
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
@@ -238,8 +250,7 @@ def main():
         async def post_init(application: Application):
             await application.bot.set_my_commands([
                 BotCommand("start", "Запустить бота"),
-                BotCommand("menu", "Открыть меню"),
-                BotCommand("change_name", "Изменить имя")
+                BotCommand("menu", "Открыть меню команд"),
             ])
 
         application.post_init = post_init
