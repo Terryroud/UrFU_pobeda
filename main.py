@@ -32,7 +32,7 @@ classifier = PromptInjectionClassifier(
 db = TelegramDatabase()
 
 # Создаем экземпляр бота
-yandex_bot = YandexGPTBot(rag_model, classifier, db)
+yandex_bot = YandexGPTBot()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -148,7 +148,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             contextual_message += f"История:\n{conversation_history}\n\n"
         contextual_message += f"Новый вопрос: {user_message}"
 
-        response = yandex_bot.ask_gpt(user_message, user.id)
+        # Данные из бд для response
+        chat_history = db.get_conversation_history(user.id)
+        user_name = db.get_user_name(user.id)
+
+        # Данные модели RAG для response
+        rag_answer = rag_model.rag_request(user_message)
+
+        # Данные валидатора для response
+        valid_stat = classifier.analyze_text(user_message)
+
+        response = yandex_bot.ask_gpt(user_message, chat_history, user_name, rag_answer, valid_stat)
 
         # Сохраняем сообщение и ответ
         db.add_message(user.id, user_message, response)
