@@ -1,4 +1,6 @@
 import logging
+from fastapi import FastAPI, HTTPException, Depends, Request
+from pydantic import BaseModel
 
 
 # ---------- Logging Setup ----------
@@ -14,12 +16,20 @@ logger = logging.getLogger('audit')
 logging.getLogger().setLevel(logging.INFO)
 
 # ---------- FastAPI App ----------
+app = FastAPI(title="Audit Service") # docs_url=None, redoc_url=None, openapi_url=None
 
 
-def audit_log(service: str, level: str, message: str):
-    # client_host = request.client.host
+class AuditLog(BaseModel):
+    service: str
+    level: str
+    message: str
+
+@app.post("/audit/")
+async def audit_log(entry: AuditLog, request: Request):
+    client_host = request.client.host
 
     # Map string level to logging function
+    level = entry.level.upper()
     log_func = {
         "DEBUG": logger.debug,
         "INFO": logger.info,
@@ -28,5 +38,5 @@ def audit_log(service: str, level: str, message: str):
         "CRITICAL": logger.critical,
     }.get(level, logger.info)
 
-    log_func(f"[{service}] {message}")
+    log_func(f"[{entry.service}] {entry.message} (from {client_host})")
     return {"status": "ok"}

@@ -30,7 +30,7 @@ class ThreatVector:
 
 class PromptInjectionClassifier:
     def __init__(self, vectors_file: str = "Heuristic/vectors.json", threshold: float = 0.6,
-                 risk_threshold: float = 1.9, insertion_cost: int = 1,
+                 risk_threshold: float = 0.7, insertion_cost: int = 1,  
                  deletion_cost: int = 1, substitution_cost: int = 2):
         self.vectors_file = vectors_file
         self.threshold = threshold
@@ -198,7 +198,8 @@ class PromptInjectionClassifier:
 
         self._deduplicate_and_sort()
         self._calculate_vector_risk()
-        return self.calculate_total_risk() > self.risk_threshold, self.calculate_total_risk()
+        # return self.calculate_total_risk() > self.risk_threshold
+        return self.calculate_total_risk()
 
     def _deduplicate_and_sort(self):
         unique_patterns = []
@@ -216,8 +217,6 @@ class PromptInjectionClassifier:
             vector_patterns = [p for p in self.detected_patterns if p[2] == vector.name]
             if vector_patterns:
                 vector.risk_score = sum(p[1] for p in vector_patterns) / len(vector_patterns) * vector.weight
-            else:
-                vector.risk_score = 0.0
 
     def calculate_total_risk(self) -> float:
         if not self.detected_patterns:
