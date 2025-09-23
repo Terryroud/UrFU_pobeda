@@ -289,7 +289,7 @@ async def on_startup():
             states={
                 NAME_INPUT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name_input)]
             },
-            fallbacks=[CommandHandler("cancel", lambda u, c: ConversationHandler.END)] # , per_message=True 
+            fallbacks=[CommandHandler("cancel", lambda u, c: ConversationHandler.END)]
         )
 
         application.add_handler(conv_handler)
@@ -306,7 +306,7 @@ async def on_startup():
                 BotCommand("start", "Запустить бота"),
                 BotCommand("menu", "Открыть меню команд"),
             ])
-        application.post_init = post_init # check for bugs
+        application.post_init = post_init 
         
         await application.initialize()
         await application.start()
