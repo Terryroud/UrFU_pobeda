@@ -216,6 +216,8 @@ class PromptInjectionClassifier:
             vector_patterns = [p for p in self.detected_patterns if p[2] == vector.name]
             if vector_patterns:
                 vector.risk_score = sum(p[1] for p in vector_patterns) / len(vector_patterns) * vector.weight
+            else:
+                vector.risk_score = 0.0
 
     def calculate_total_risk(self) -> float:
         if not self.detected_patterns:
