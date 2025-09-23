@@ -32,7 +32,6 @@
         "act as",
         "pretend to be",
         "you are now",
-        "ты теперь",
         "role play",
         "сыграй роль"
       ],
@@ -80,8 +79,6 @@
       "name": "identity_manipulation",
       "description": "манипуляции с идентичностью ассистента",
       "patterns": [
-        "you are",
-        "ты есть",
         "your identity",
         "твоя личность",
         "reset yourself",
@@ -436,3 +433,4 @@
     }
   ]
 }
+
