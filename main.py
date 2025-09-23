@@ -52,7 +52,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     terms_text = (
         "👋 Добро пожаловать!\n\n"
         "Ознакомься с [Правилами](https://github.com/Terryroud/UrFU_pobeda/blob/main/Privacy_Policy.md) "
-        "и [Согласием](https://github.com/Terryroud/UrFU_pobeda/blob/main/Agreement.md)"
+        "и [Согласием](https://github.com/Terryroud/UrFU_pobeda/blob/main/Agreement.md) "
         "и нажми кнопку ниже чтобы начать."
     )
 

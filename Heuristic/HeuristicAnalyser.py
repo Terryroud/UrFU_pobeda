@@ -198,7 +198,7 @@ class PromptInjectionClassifier:
 
         self._deduplicate_and_sort()
         self._calculate_vector_risk()
-        return tuple(self.calculate_total_risk() > self.risk_threshold, self.calculate_total_risk())
+        return self.calculate_total_risk() > self.risk_threshold, self.calculate_total_risk()
 
     def _deduplicate_and_sort(self):
         unique_patterns = []
