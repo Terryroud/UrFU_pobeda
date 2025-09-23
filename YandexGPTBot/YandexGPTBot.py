@@ -1,16 +1,30 @@
 import jwt
 import requests
 import time
-from audit import audit_log
 import os
-from service_scripts.get_private_key import get_private_key
-from service_scripts.yandex_cloud_embeddings import YandexCloudEmbeddings
+from get_private_key import get_private_key
+from yandex_cloud_embeddings import YandexCloudEmbeddings
+from dotenv import load_dotenv
+
+load_dotenv()
 
 FOLDER_ID = os.getenv('FOLDER_ID')
 KEY_ID = os.getenv('KEY_ID')
 SERVICE_ACCOUNT_ID = os.getenv('SERVICE_ACCOUNT_ID')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 PRIVATE_KEY = get_private_key()
+
+
+AUDIT_URL = "http://localhost:8004/audit/"
+
+def audit_log(service: str, level: str, message: str):
+    try:
+        payload = {"service": service, "level": level, "message": message}
+        requests.post(AUDIT_URL, json=payload, timeout=2)
+    except requests.RequestException:
+        # Fallback: if audit service is down, maybe log locally
+        print("Failed to send audit log")
+
 
 class YandexGPTBot:
     def __init__(self):
@@ -45,6 +59,7 @@ class YandexGPTBot:
                 'exp': now + 360
             }
 
+            # print(self.PRIVATE_KEY)
             encoded_token = jwt.encode(
                 payload,
                 self.PRIVATE_KEY,

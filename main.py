@@ -1,43 +1,84 @@
-from audit import audit_log
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import os
 from dotenv import load_dotenv
-from YandexGPTBot.YandexGPTBot import YandexGPTBot
-from RAG_model.RAG import RAG
-from Heuristic.HeuristicAnalyser import PromptInjectionClassifier
-from database.database import TelegramDatabase
+from datetime import datetime
+import logging
+import asyncio
+import httpx
+from fastapi import FastAPI
+import api_requests
 
 NAME_INPUT = 1
+AUDIT_URL = "http://localhost:8004/audit/"
+
+# setting up logs for telegram
+class AuditLogHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        self.client = httpx.AsyncClient(timeout=2)
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        payload = {
+            "service": "telegram-bot",
+            "level": record.levelname,
+            "message": log_entry,
+        }
+        # Schedule sending in the background
+        try:
+            loop = asyncio.get_event_loop()
+            loop.create_task(self._send_log(payload))
+        except RuntimeError:
+            # No running event loop (e.g., script exit) → fallback
+            print(f"[Fallback log] {payload}")
+
+    async def _send_log(self, payload: dict):
+        try:
+            await self.client.post(AUDIT_URL, json=payload)
+        except Exception as e:
+            print(f"Failed to send log to audit service: {e}")
+            print(f"Original log: {payload}")
+
+    async def aclose(self):
+        """Close the httpx client gracefully on shutdown."""
+        await self.client.aclose()
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+# use our async audit handler
+audit_handler = AuditLogHandler()
+audit_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+audit_handler.setFormatter(formatter)
+
+logger.addHandler(audit_handler)
+
+logger.info("Bot is starting...")
+
+class ExcludeLibrariesFilter(logging.Filter):
+    def filter(self, record):
+        # don’t forward logs from these modules
+        excluded = ["httpx"]
+        return not any(record.name.startswith(lib) for lib in excluded)
+
+audit_handler.addFilter(ExcludeLibrariesFilter())
 
 # Импорт и настройка переменных окружения
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
-rag_model = RAG(score_threshold=0.5, chunk_size=500, chunk_overlap=150, chunk_count=5)
-rag_model.create_faiss_index()
+app = FastAPI(title="Orchestator", docs_url=None, redoc_url=None, openapi_url=None)
 
-classifier = PromptInjectionClassifier(
-    vectors_file="Heuristic/vectors.json",
-    threshold=0.7,
-    risk_threshold=1.5,
-    insertion_cost=1,
-    deletion_cost=1,
-    substitution_cost=1
-)
-
-# Инициализация дазы банных
-db = TelegramDatabase()
-
-# Создаем экземпляр бота
-yandex_bot = YandexGPTBot()
+# telegram bot handle functions
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
 
     # Сохраняем пользователя в базу
-    db.add_user(
+    api_requests.add_user( 
         user_id=user.id,
         username=user.username,
         first_name=user.first_name,
@@ -63,6 +104,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         disable_web_page_preview=True
     )
 
+
 async def handle_terms_acceptance(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик согласия"""
     query = update.callback_query
@@ -72,7 +114,7 @@ async def handle_terms_acceptance(update: Update, context: ContextTypes.DEFAULT_
     await query.edit_message_text("✅ Отлично! Приступаем к магии!")
 
     user_id = query.from_user.id
-    user_name = db.get_user_name(user_id)
+    user_name = api_requests.get_user_name(user_id) 
 
     if user_name:
         # Если имя уже есть
@@ -90,6 +132,7 @@ async def handle_terms_acceptance(update: Update, context: ContextTypes.DEFAULT_
         )
         return NAME_INPUT
 
+
 async def change_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Команда для изменения имени"""
     await update.message.reply_text(
@@ -97,13 +140,14 @@ async def change_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return NAME_INPUT
 
+
 async def handle_name_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик ввода имени"""
     user = update.effective_user
     user_message = update.message.text
 
     # Обновляем имя пользователя
-    db.update_user_name(user.id, user_message)
+    api_requests.update_user_name(user.id, user_message) 
 
     await update.message.reply_text(
         f"Приятно познакомиться, {user_message}! 😊\n"
@@ -113,19 +157,20 @@ async def handle_name_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     return -1
 
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка текстовых сообщений"""
     user = update.effective_user
     user_message = update.message.text
 
-    db.add_user(
+    api_requests.add_user( 
         user_id=user.id,
         username=user.username,
         first_name=user.first_name,
         last_name=user.last_name
     )
 
-    user_name = db.get_user_name(user.id)
+    user_name = api_requests.get_user_name(user.id) 
 
     if not user_message.strip():
         await update.message.reply_text("Пожалуйста, введи текстовый вопрос, в волшебном мире пока не научились пользоваться картинками и стикерами((")
@@ -139,7 +184,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         # Получаем историю переписки для контекста
-        conversation_history = db.get_conversation_history(user.id, limit=50)
+        conversation_history = api_requests.get_history(user.id, limit=50) 
 
         # Формируем персонализированный запрос
         contextual_message = f"Пользователь: {user_name or 'User'}\n"
@@ -148,17 +193,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         contextual_message += f"Новый вопрос: {user_message}"
 
         # Данные из бд для response
-        chat_history = db.get_conversation_history(user.id)
-        user_name = db.get_user_name(user.id)
+        chat_history = api_requests.get_history(user.id) 
+        user_name = api_requests.get_user_name(user.id) 
 
         # Данные модели RAG для response
-        rag_answer = rag_model.rag_request(user_message)
+        rag_answer = api_requests.rag_request(user_message)
 
         # Данные валидатора для response
-        is_invalid, valid_stat = classifier.analyze_text(user_message)
+        is_invalid, valid_stat = api_requests.analyze_text(user_message)
 
-        response = yandex_bot.ask_gpt(user_message, chat_history, user_name, rag_answer, is_invalid, valid_stat)
-
+        response = api_requests.agent_request(user_message, chat_history, user_name, rag_answer, is_invalid, valid_stat)
+        
         if not response:
             response = "Извини, я не могу обсуждать такие темы, иначе дементоры высосут из меня душу(("
 
@@ -168,7 +213,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(response)
 
     except Exception as e:
-        audit_log("orchestrator", "ERROR", f"Error handling message: {str(e)}")
+        api_requests.audit_log("orchestrator", "ERROR", f"Error handling message: {str(e)}")
         await update.message.reply_text(
             "Извини, я устал и не смогу сейчас ответить тебе. "
             "Пожалуйста, попробуй позже"
@@ -210,7 +255,7 @@ async def handle_menu_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     elif query.data == "delete_account":  # НОВЫЙ ОБРАБОТЧИК
         user_id = query.from_user.id
-        db.delete_user_data(user_id)
+        api_requests.delete_user_data(user_id) 
 
         await context.bot.send_message(
             chat_id=query.message.chat_id,
@@ -228,13 +273,10 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Пожалуйста, попробуй позже"
         )
 
-def main():
-    """Основная функция"""
-    try:
-        # Проверяем возможность генерации токена при запуске
-        yandex_bot.get_iam_token()
-        audit_log("orchestrator", "INFO", "IAM token test successful")
 
+@app.on_event("startup")
+async def on_startup():
+    try:
         application = Application.builder().token(TELEGRAM_TOKEN).build()
 
         from telegram.ext import ConversationHandler
@@ -264,14 +306,18 @@ def main():
                 BotCommand("start", "Запустить бота"),
                 BotCommand("menu", "Открыть меню команд"),
             ])
+        application.post_init = post_init 
+        
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling()
 
-        application.post_init = post_init
-
-        audit_log("orchestrator", "INFO", "Бот запускается...")
-        application.run_polling()
-
+        api_requests.audit_log("orchestrator", "INFO", "Bot is running...")
     except Exception as e:
-        audit_log("orchestrator", "ERROR", f"Failed to start bot: {str(e)}")
+        api_requests.audit_log("orchestrator", "ERROR", f"Failed to start bot: {str(e)}")
 
-if __name__ == "__main__":
-    main()
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "FastAPI is running with Telegram bot"}
+
+

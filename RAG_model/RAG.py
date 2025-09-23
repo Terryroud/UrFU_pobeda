@@ -1,13 +1,11 @@
 import os
-from audit import audit_log
 from dotenv import load_dotenv
-from service_scripts.get_private_key import get_private_key
 import boto3
 from tempfile import NamedTemporaryFile
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from service_scripts.yandex_cloud_embeddings import YandexCloudEmbeddings
+from yandex_cloud_embeddings import YandexCloudEmbeddings
 import requests
 
 # Импорт и настройка переменных окружения
@@ -20,7 +18,16 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 S3_ACCESS_KEY = os.getenv('STATIC_ACCESS_KEY_ADMIN')
 S3_SECRET_KEY = os.getenv('STATIC_PRIVATE_KEY_ADMIN')
 S3_BUCKET = os.getenv('S3_BUCKET')
-PRIVATE_KEY = get_private_key()
+
+AUDIT_URL = "http://localhost:8004/audit/"
+
+def audit_log(service: str, level: str, message: str):
+    try:
+        payload = {"service": service, "level": level, "message": message}
+        requests.post(AUDIT_URL, json=payload, timeout=2)
+    except requests.RequestException:
+        # Fallback: if audit service is down, maybe log locally
+        print("Failed to send audit log")
 
 class RAG:
     def __init__(self, score_threshold=0.7, chunk_size=500, chunk_overlap=50, chunk_count=5):
