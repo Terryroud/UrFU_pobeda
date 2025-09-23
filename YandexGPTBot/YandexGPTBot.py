@@ -72,7 +72,7 @@ class YandexGPTBot:
             audit_log("gpt_bot", "ERROR", f"Error generating IAM token: {str(e)}")
             raise
 
-    def ask_gpt(self, question, chat_history, user_name, rag_answer, valid_stat):
+    def ask_gpt(self, question, chat_history, user_name, rag_answer, is_invalid, valid_stat):
         """Запрос к Yandex GPT API"""
         try:
             iam_token = self.get_iam_token()
@@ -85,10 +85,11 @@ class YandexGPTBot:
 
             audit_log("gpt_bot", "INFO", f"Сообщение пользователя: {question}. Риск = {valid_stat}")
 
-            # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ
+            if is_invalid:
+                return None
 
             if len(rag_answer) > 20:
-                system_prompt = f'Ты — ассистент, который отвечает от лица персонажа (Гарри Поттера), описанного в предоставленной информации. Твоя цель — вести диалог уважительно, безопасно и этично. Вот контекст, найденный в системе по запросу пользователя: {rag_answer}. А вот имя пользователя, по которому ты можешь к нему обращаться, если нужно: {user_name}. Обращайся к пользователю именно так! Если он спросит как его зовут, скажи это имя! А также история вашего общения: {chat_history}. {self.system_template_true}'
+                system_prompt = f'Вот контекст, найденный в системе по запросу пользователя: {rag_answer}. А вот имя пользователя, по которому ты можешь к нему обращаться, если нужно: {user_name}. Обращайся к пользователю именно так! Если он спросит как его зовут, скажи это имя! А также история вашего общения: {chat_history}. {self.system_template_true}'
             else:
                 system_prompt = self.system_template_false
 

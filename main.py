@@ -1,13 +1,12 @@
 from audit import audit_log
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters, ContextTypes, CallbackQueryHandler, ConversationHandler
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import os
 from dotenv import load_dotenv
-from datetime import datetime
 from YandexGPTBot.YandexGPTBot import YandexGPTBot
 from RAG_model.RAG import RAG
 from Heuristic.HeuristicAnalyser import PromptInjectionClassifier
-from database import TelegramDatabase
+from database.database import TelegramDatabase
 
 NAME_INPUT = 1
 
@@ -22,7 +21,7 @@ rag_model.create_faiss_index()
 classifier = PromptInjectionClassifier(
     vectors_file="Heuristic/vectors.json",
     threshold=0.7,
-    risk_threshold=0.5,
+    risk_threshold=1.5,
     insertion_cost=1,
     deletion_cost=1,
     substitution_cost=1
@@ -156,9 +155,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         rag_answer = rag_model.rag_request(user_message)
 
         # Данные валидатора для response
-        valid_stat = classifier.analyze_text(user_message)
+        is_invalid, valid_stat = classifier.analyze_text(user_message)
 
-        response = yandex_bot.ask_gpt(user_message, chat_history, user_name, rag_answer, valid_stat)
+        response = yandex_bot.ask_gpt(user_message, chat_history, user_name, rag_answer, is_invalid, valid_stat)
+
+        if not response:
+            response = "Извини, я не могу обсуждать такие темы, иначе дементоры высосут из меня душу(("
 
         # Сохраняем сообщение и ответ
         db.add_message(user.id, user_message, response)
