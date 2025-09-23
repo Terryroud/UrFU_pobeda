@@ -27,7 +27,7 @@ def audit_log(service: str, level: str, message: str):
 
 
 class YandexGPTBot:
-    def __init__(self): # , classifier):
+    def __init__(self):
         self.iam_token = None
         self.token_expires = 0
         self.KEY_ID = KEY_ID

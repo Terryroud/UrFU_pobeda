@@ -215,8 +215,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         api_requests.audit_log("orchestrator", "ERROR", f"Error handling message: {str(e)}")
         await update.message.reply_text(
-            "Извините, произошла ошибка при обработке вашего запроса. "
-            "Пожалуйста, попробуйте позже."
+            "Извини, я устал и не смогу сейчас ответить тебе. "
+            "Пожалуйста, попробуй позже"
         )
 
 
