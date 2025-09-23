@@ -1,14 +1,11 @@
 from RAG import RAG
 from fastapi import FastAPI, HTTPException, Depends, Request
 from pydantic import BaseModel
-import requests
 
 rag_model = RAG(score_threshold=0.5, chunk_size=500, chunk_overlap=150, chunk_count=5)
 rag_model.create_faiss_index()
 
-# AGENT_URL = "http://localhost:8003/agent/"
-
-app = FastAPI(title="RAG") # docs_url=None, redoc_url=None, openapi_url=None
+app = FastAPI(title="RAG", docs_url=None, redoc_url=None, openapi_url=None)
 
 class Question(BaseModel):
     question: str

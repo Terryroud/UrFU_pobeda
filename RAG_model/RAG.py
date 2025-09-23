@@ -1,7 +1,5 @@
 import os
-# from Audit.audit import audit_log
 from dotenv import load_dotenv
-# from get_private_key import get_private_key
 import boto3
 from tempfile import NamedTemporaryFile
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
@@ -20,7 +18,6 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 S3_ACCESS_KEY = os.getenv('STATIC_ACCESS_KEY_ADMIN')
 S3_SECRET_KEY = os.getenv('STATIC_PRIVATE_KEY_ADMIN')
 S3_BUCKET = os.getenv('S3_BUCKET')
-# PRIVATE_KEY = get_private_key()
 
 AUDIT_URL = "http://localhost:8004/audit/"
 

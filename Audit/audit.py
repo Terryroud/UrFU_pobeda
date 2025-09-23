@@ -16,7 +16,7 @@ logger = logging.getLogger('audit')
 logging.getLogger().setLevel(logging.INFO)
 
 # ---------- FastAPI App ----------
-app = FastAPI(title="Audit Service") # docs_url=None, redoc_url=None, openapi_url=None
+app = FastAPI(title="Audit Service", docs_url=None, redoc_url=None, openapi_url=None)
 
 
 class AuditLog(BaseModel):

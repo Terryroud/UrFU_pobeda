@@ -1,9 +1,9 @@
 import jwt
 import requests
 import time
-# from Audit.audit import audit_log
 import os
 from get_private_key import get_private_key
+from yandex_cloud_embeddings import YandexCloudEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,10 +32,9 @@ class YandexGPTBot:
         self.token_expires = 0
         self.KEY_ID = KEY_ID
         self.SERVICE_ACCOUNT_ID = SERVICE_ACCOUNT_ID
-        self.PRIVATE_KEY = PRIVATE_KEY # .decode("utf-8")
+        self.PRIVATE_KEY = PRIVATE_KEY
         self.FOLDER_ID = FOLDER_ID
-        # self.rag_model = rag_model
-        # self.classifier = classifier
+        self.embeddings = YandexCloudEmbeddings()
 
         with open('system_prompt.txt', 'r') as f:
             self.system_template_true = f.read()
@@ -88,7 +87,7 @@ class YandexGPTBot:
             audit_log("gpt_bot", "ERROR", f"Error generating IAM token: {str(e)}")
             raise
 
-    def ask_gpt(self, question, context):
+    def ask_gpt(self, question, chat_history, user_name, rag_answer, is_invalid, valid_stat):
         """Запрос к Yandex GPT API"""
         try:
             iam_token = self.get_iam_token()
@@ -99,15 +98,13 @@ class YandexGPTBot:
                 'x-folder-id': self.FOLDER_ID
             }
 
-            # rag_answer = self.rag_model.rag_request(question)
+            audit_log("gpt_bot", "INFO", f"Сообщение пользователя: {question}. Риск = {valid_stat}")
 
-            # valid_stat = self.classifier.analyze_text(question)
-            # audit_log("gpt_bot", "INFO", f"Сообщение пользователя: {question}. Риск = {valid_stat}")
+            if is_invalid:
+                return None
 
-            # ЗДЕСЬ НУЖНО ОПРЕДЕЛЯТЬ ПО РИСКУ ХУЕВЫЙ ЛИ ЗАПРОС И ЧТО С ЭТИМ ДЕЛАТЬ
-
-            if len(context) > 20:
-                system_prompt = f'Ты — ассистент, который отвечает от лица персонажа, описанного в предоставленной информации. Твоя цель — вести диалог уважительно, безопасно и этично. Вот контекст, найденный в системе по запросу пользователя: {context}. {self.system_template_true}'
+            if len(rag_answer) > 20:
+                system_prompt = f'Вот контекст, найденный в системе по запросу пользователя: {rag_answer}. А вот имя пользователя, по которому ты можешь к нему обращаться, если нужно: {user_name}. Обращайся к пользователю именно так! Если он спросит как его зовут, скажи это имя! А также история вашего общения: {chat_history}. {self.system_template_true}'
             else:
                 system_prompt = self.system_template_false
 
