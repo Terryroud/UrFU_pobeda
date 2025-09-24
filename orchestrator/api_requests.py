@@ -1,10 +1,11 @@
 import requests
+import os
 
-VALID_URL = "http://localhost:8001/valid/"
-RAG_URL = "http://localhost:8002/rag/"
-AGENT_URL = "http://localhost:8003/agent/"
-AUDIT_URL = "http://localhost:8004/audit/"
-DB_URL = "http://localhost:8005"
+VALID_URL = os.getenv("VALID_URL", "http://valid:8001/valid/") # "http://localhost:8001/valid/"
+RAG_URL = os.getenv("RAG_URL", "http://rag:8002/rag/") # "http://localhost:8002/rag/"
+AGENT_URL = os.getenv("AGENT_URL", "http://agent:8003/agent/") # "http://localhost:8003/agent/"
+AUDIT_URL = os.getenv("AUDIT_URL", "http://audit:8004/audit/") # "http://localhost:8004/audit/"
+DB_URL = os.getenv("DB_URL", "http://db:8005") # "http://localhost:8005"
 
 # log request
 def audit_log(service: str, level: str, message: str):
@@ -149,3 +150,21 @@ def get_history(user_id: int, limit: int = 50):
         return resp.json()['history']
     except requests.RequestException:
         audit_log("orchestrator", "ERROR", "Error sending getting chat history")
+
+def add_message(user_id: int, message_text: str, bot_response: str):
+    try:
+        payload = {
+        "user_id": user_id,
+        "message_text": message_text,
+        "bot_response": bot_response
+        }
+        resp = requests.post(
+            f"{DB_URL}/database/add_message/",
+            json=payload,
+            timeout=5
+        )
+        resp.raise_for_status()
+        return resp.json().get("status") == "ok"
+    except requests.RequestException:   
+        audit_log("orchestrator", "ERROR", f"Error adding message for user_id={user_id}")
+        return False

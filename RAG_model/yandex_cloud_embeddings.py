@@ -1,6 +1,10 @@
 from langchain.embeddings.base import Embeddings
 from typing import List
 from embedder import get_embedding_textsdk
+import os
+
+# os.environ["GRPC_DNS_RESOLVER"] = "native" 
+os.environ["GRPC_ARG_DNS_RESOLVER"] = "ipv4"
 
 
 class YandexCloudEmbeddings(Embeddings):

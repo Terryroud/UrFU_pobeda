@@ -11,15 +11,14 @@ import requests
 # Импорт и настройка переменных окружения
 load_dotenv()
 
-FOLDER_ID = os.getenv('FOLDER_ID')
-KEY_ID = os.getenv('KEY_ID')
-SERVICE_ACCOUNT_ID = os.getenv('SERVICE_ACCOUNT_ID')
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 S3_ACCESS_KEY = os.getenv('STATIC_ACCESS_KEY_ADMIN')
 S3_SECRET_KEY = os.getenv('STATIC_PRIVATE_KEY_ADMIN')
 S3_BUCKET = os.getenv('S3_BUCKET')
 
-AUDIT_URL = "http://localhost:8004/audit/"
+os.environ["GRPC_DNS_RESOLVER"] = "native" 
+os.environ["GRPC_ARG_DNS_RESOLVER"] = "ipv4"
+
+AUDIT_URL = os.getenv("AUDIT_URL", "http://audit:8004")
 
 def audit_log(service: str, level: str, message: str):
     try:
@@ -36,7 +35,6 @@ class RAG:
         self.chunk_overlap = chunk_overlap
         self.chunk_count = chunk_count
 
-
         self.s3 = boto3.client(
             's3',
             endpoint_url='https://storage.yandexcloud.net',
@@ -44,6 +42,7 @@ class RAG:
             aws_secret_access_key=S3_SECRET_KEY
         )
         self.embeddings = YandexCloudEmbeddings()
+        audit_log("agent", "INFO", "connected to s3")
 
     def load_document_from_s3(self, bucket_name: str, path: str):
         with NamedTemporaryFile(delete=False, suffix=os.path.splitext(path)[1]) as tmp_file:

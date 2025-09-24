@@ -1,0 +1,66 @@
+services:
+  db:
+    build: ./database
+    container_name: db
+    ports:
+      - "8005:8005"
+    volumes:
+      - database-data:/app/data
+
+  audit:
+    build: ./Audit
+    container_name: audit
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./audit_logs:/app/logs
+
+  agent:
+    build: ./YandexGPTBot
+    env_file:
+      - ./.env
+    container_name: agent
+    ports:
+      - "8003:8003"
+    depends_on:
+      - audit
+    volumes:
+      - ./private.pem:/app/private.pem
+
+  rag:
+    build: ./RAG_model
+    env_file:
+      - ./.env
+    volumes:
+      - ./rag-data:/app/data
+    container_name: rag
+    ports:
+      - "8002:8002"
+    depends_on:
+      - audit
+
+  valid:
+    build: ./Heuristic
+    container_name: valid
+    ports:
+      - "8001:8001"
+    depends_on:
+      - audit
+
+  orchestrator:
+    build: ./orchestrator
+    env_file:
+      - ./.env
+    container_name: orchestrator
+    ports:
+      - "8000:8000"
+    depends_on:
+      - audit
+      - rag
+      - valid
+      - db
+      - agent
+
+volumes:
+  rag-data:
+  database-data:

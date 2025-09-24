@@ -1,0 +1,5 @@
+requests==2.32.5
+fastapi==0.116.2
+uvicorn==0.35.0
+regex==2025.9.1
+dataclasses-json==0.6.7

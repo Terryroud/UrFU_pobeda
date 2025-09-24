@@ -1,6 +1,10 @@
 import requests
+import os
+from dotenv import load_dotenv
 
-AUDIT_URL = "http://localhost:8004/audit/"
+load_dotenv()
+
+AUDIT_URL = os.getenv("AUDIT_URL", "http://audit:8004")
 
 def audit_log(service: str, level: str, message: str):
     try:

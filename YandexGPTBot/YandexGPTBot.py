@@ -11,11 +11,11 @@ load_dotenv()
 FOLDER_ID = os.getenv('FOLDER_ID')
 KEY_ID = os.getenv('KEY_ID')
 SERVICE_ACCOUNT_ID = os.getenv('SERVICE_ACCOUNT_ID')
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 PRIVATE_KEY = get_private_key()
+# PRIVATE_KEY = os.getenv('PRIVATE_KEY') # temporary for serverless
 
 
-AUDIT_URL = "http://localhost:8004/audit/"
+AUDIT_URL = os.getenv("AUDIT_URL", "http://audit:8004")
 
 def audit_log(service: str, level: str, message: str):
     try:
@@ -59,7 +59,6 @@ class YandexGPTBot:
                 'exp': now + 360
             }
 
-            # print(self.PRIVATE_KEY)
             encoded_token = jwt.encode(
                 payload,
                 self.PRIVATE_KEY,

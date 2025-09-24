@@ -9,8 +9,10 @@ import httpx
 from fastapi import FastAPI
 import api_requests
 
+load_dotenv()
+
 NAME_INPUT = 1
-AUDIT_URL = "http://localhost:8004/audit/"
+AUDIT_URL = os.getenv("AUDIT_URL", "http://audit:8004/audit/")
 
 # setting up logs for telegram
 class AuditLogHandler(logging.Handler):
@@ -66,7 +68,6 @@ class ExcludeLibrariesFilter(logging.Filter):
 audit_handler.addFilter(ExcludeLibrariesFilter())
 
 # Импорт и настройка переменных окружения
-load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
@@ -208,7 +209,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             response = "Извини, я не могу обсуждать такие темы, иначе дементоры высосут из меня душу(("
 
         # Сохраняем сообщение и ответ
-        db.add_message(user.id, user_message, response)
+        api_requests.add_message(user.id, user_message, response)
 
         await update.message.reply_text(response)
 
