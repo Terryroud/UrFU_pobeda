@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from shared.audit import audit_log
 
 app = FastAPI(title="RAG Service")
 
@@ -11,9 +10,7 @@ async def startup_event():
         from RAG import RAG
         rag_model = RAG(score_threshold=0.5, chunk_size=500, chunk_overlap=150, chunk_count=5)
         rag_model.create_faiss_index()
-        audit_log("rag-service", "INFO", "RAG service started successfully")
     except Exception as e:
-        audit_log("rag-service", "ERROR", f"Failed to initialize RAG: {str(e)}")
         raise
 
 
@@ -28,19 +25,16 @@ async def query_rag(question: str):
         if not question or not question.strip():
             raise HTTPException(status_code=400, detail="Question cannot be empty")
 
-        result = rag_model.rag_request(question)
-
-        audit_log("rag-service", "INFO", f"RAG processed query: '{question[:50]}...'")
+        result, chunks_count = rag_model.rag_request(question)
 
         return {
             "answer": result,
             "status": "success",
-            "chunks_count": len(result.split('\n\n')) if result else 0
+            "chunks_count": chunks_count
         }
     except HTTPException:
         raise
     except Exception as e:
-        audit_log("rag-service", "ERROR", f"Error processing RAG query: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 if __name__ == "__main__":

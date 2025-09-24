@@ -3,7 +3,6 @@ from database import TelegramDatabase
 from pydantic import BaseModel
 from typing import Optional, List
 import os
-from shared.audit import audit_log
 
 app = FastAPI(title="Database Service")
 
@@ -44,10 +43,8 @@ async def create_or_update_user(user: UserCreate):
             first_name=user.first_name,
             last_name=user.last_name
         )
-        audit_log("database_service", "INFO", f"User {user.user_id} updated")
         return {"status": "success", "message": "User created/updated"}
     except Exception as e:
-        audit_log("database_service", "ERROR", f"Error updating user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -71,7 +68,6 @@ async def get_user(user_id: int):
     except HTTPException:
         raise
     except Exception as e:
-        audit_log("database_service", "ERROR", f"Error getting user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -80,10 +76,8 @@ async def update_user_name(user_id: int, name: str):
     """Обновление имени пользователя"""
     try:
         db.update_user_name(user_id, name)
-        audit_log("database_service", "INFO", f"User {user_id} name updated to {name}")
         return {"status": "success", "message": "Name updated"}
     except Exception as e:
-        audit_log("database_service", "ERROR", f"Error updating name: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -92,10 +86,8 @@ async def add_message(message: MessageCreate):
     """Добавление сообщения в историю"""
     try:
         db.add_message(message.user_id, message.user_message, message.bot_response)
-        audit_log("database_service", "INFO", f"Message added for user {message.user_id}")
         return {"status": "success", "message": "Message added"}
     except Exception as e:
-        audit_log("database_service", "ERROR", f"Error adding message: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -113,7 +105,6 @@ async def get_conversation_history(user_id: int, limit: int = 50):
             "message_count": len(messages)
         }
     except Exception as e:
-        audit_log("database_service", "ERROR", f"Error getting history: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -127,7 +118,6 @@ async def get_user_stats(user_id: int):
             "stats": stats
         }
     except Exception as e:
-        audit_log("database_service", "ERROR", f"Error getting stats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -136,10 +126,8 @@ async def delete_user_data(user_id: int):
     """Удаление данных пользователя"""
     try:
         db.delete_user_data(user_id)
-        audit_log("database_service", "INFO", f"User {user_id} data deleted")
         return {"status": "success", "message": "User data deleted"}
     except Exception as e:
-        audit_log("database_service", "ERROR", f"Error deleting user data: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -148,10 +136,8 @@ async def cleanup_old_messages(days: int = 30):
     """Очистка старых сообщений"""
     try:
         db.cleanup_old_messages(days)
-        audit_log("database_service", "INFO", f"Cleaned up messages older than {days} days")
         return {"status": "success", "message": f"Cleaned up messages older than {days} days"}
     except Exception as e:
-        audit_log("database_service", "ERROR", f"Error cleaning up messages: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -169,5 +155,4 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
 
-    audit_log("database_service", "INFO", "Starting Database Service...")
     uvicorn.run(app, host="0.0.0.0", port=8004)

@@ -2,7 +2,6 @@ import jwt
 import requests
 import time
 import os
-from shared.audit import audit_log
 from shared.get_private_key import get_private_key
 from service_scripts.yandex_cloud_embeddings import YandexCloudEmbeddings
 
@@ -30,7 +29,6 @@ class YandexGPTBot:
             with open('system_prompt_false.txt', 'r', encoding='utf-8') as f:
                 self.system_template_false = f.read()
         except FileNotFoundError as e:
-            audit_log("gpt_bot", "ERROR", f"Prompt files not found: {e}")
             raise
 
 
@@ -68,11 +66,9 @@ class YandexGPTBot:
             self.iam_token = token_data['iamToken']
             self.token_expires = now + 3500  # На 100 секунд меньше срока действия
 
-            audit_log("gpt_bot", "INFO", "IAM token generated successfully")
             return self.iam_token
 
         except Exception as e:
-            audit_log("gpt_bot", "ERROR", f"Error generating IAM token: {str(e)}")
             raise
 
     def ask_gpt(self, question, chat_history, user_name, rag_answer, is_invalid, valid_stat):
@@ -85,8 +81,6 @@ class YandexGPTBot:
                 'Authorization': f'Bearer {iam_token}',
                 'x-folder-id': self.FOLDER_ID
             }
-
-            audit_log("gpt_bot", "INFO", f"Сообщение пользователя: {question}. Риск = {valid_stat}")
 
             if is_invalid:
                 return None
@@ -123,11 +117,9 @@ class YandexGPTBot:
             )
 
             if response.status_code != 200:
-                audit_log("gpt_bot", "ERROR", f"Yandex GPT API error: {response.text}")
                 raise Exception(f"Ошибка API: {response.status_code}")
 
             return response.json()['result']['alternatives'][0]['message']['text']
 
         except Exception as e:
-            audit_log("gpt_bot", "ERROR", f"Error in ask_gpt: {str(e)}")
             raise

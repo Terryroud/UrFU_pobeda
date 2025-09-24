@@ -100,7 +100,8 @@ async def handle_message(request: MessageRequest):
                 params={'question': request.message}
             )
             rag_data = rag_response.json()
-            await audit_log("rag", "INFO", f"RAG context retrieved", request.user_id)
+            await audit_log("rag", "INFO", f"RAG context retrieved. Find {rag_data['chunks_count']} chunks.", request.user_id)
+
 
             # 6. Генерируем ответ через AI
             ai_request = {

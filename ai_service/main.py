@@ -1,8 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from YandexGPTBot import YandexGPTBot
 import os
-from shared.audit import audit_log
-
 app = FastAPI(title="AI Service")
 
 # Инициализация Yandex GPT бота
@@ -13,8 +11,6 @@ yandex_bot = YandexGPTBot()
 async def generate_response(request: dict):
     """Генерация ответа через Yandex GPT"""
     try:
-        audit_log("ai_service", "INFO", f"Generating response for user {request.get('user_id')}")
-
         response = yandex_bot.ask_gpt(
             question=request['message'],
             chat_history=request.get('chat_history', ''),
@@ -29,7 +25,6 @@ async def generate_response(request: dict):
             "status": "success"
         }
     except Exception as e:
-        audit_log("ai_service", "ERROR", f"Error generating response: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -47,5 +42,4 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
 
-    audit_log("ai_service", "INFO", "Starting AI Service...")
     uvicorn.run(app, host="0.0.0.0", port=8002)

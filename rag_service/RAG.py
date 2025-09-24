@@ -1,5 +1,4 @@
 import os
-from shared.audit import audit_log
 from dotenv import load_dotenv
 import boto3
 from tempfile import NamedTemporaryFile
@@ -97,7 +96,6 @@ class RAG:
     def create_faiss_index(self):
         vectorstore = FAISS.from_documents(self.splitting_into_chunks(), self.embeddings)
         vectorstore.save_local("./vectorstore_faiss")
-        audit_log("rag", "INFO", "Faiss create successful")
 
     def rag_request(self, question):
         vectorstore = FAISS.load_local("./vectorstore_faiss", self.embeddings, allow_dangerous_deserialization=True)
@@ -109,6 +107,5 @@ class RAG:
                 filtered_docs.append(doc)
 
         context_chunks = "\n\n".join([doc.page_content for doc in filtered_docs])
-        audit_log("rag", "INFO", f"RAG нашел {len(filtered_docs)} подходящих чанков.")
 
-        return context_chunks
+        return context_chunks, len(filtered_docs)

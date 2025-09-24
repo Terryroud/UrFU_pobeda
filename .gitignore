@@ -486,3 +486,4 @@ integration_tests/
 vectorstore_faiss/
 database-data/
 rag-data/
+audit_logs/
