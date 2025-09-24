@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  orchestrator:
+    build: ./orchestrator_service
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./private.pem:/app/private.pem
+    depends_on:
+      - rag_service
+      - heuristic_service
+      - ai_service
+      - database_service
+      - audit_service
+
+  telegram-bot:
+    build: ./telegram_bot_service
+    env_file: .env
+    depends_on:
+      - orchestrator
+
+  heuristic_service:
+    build: ./heuristic_service
+    ports:
+      - "8003:8003"
+    env_file: .env
+    volumes:
+      - ./private.pem:/app/private.pem
+
+  rag_service:
+    build: ./rag_service
+    ports:
+      - "8001:8001"
+    env_file: .env
+    volumes:
+      - ./private.pem:/app/private.pem
+      - ./rag-data:/app/data
+
+  ai_service:
+    build: ./ai_service
+    ports:
+      - "8002:8002"
+    env_file: .env
+    volumes:
+      - ./private.pem:/app/private.pem
+
+  database_service:
+    build: ./database_service
+    ports:
+      - "8004:8004"
+    env_file: .env
+    environment:
+      - DATABASE_NAME=telegram_bot.db
+    volumes:
+      - database-data:/app/data
+
+  audit_service:
+    build: ./audit_service
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./audit_logs:/app/logs
+    environment:
+      - LOG_LEVEL=INFO
+
+volumes:
+  rag-data:
+  database-data:

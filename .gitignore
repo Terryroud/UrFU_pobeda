@@ -484,3 +484,5 @@ docs/_build/
 integration_tests/
 
 vectorstore_faiss/
+database-data/
+rag-data/

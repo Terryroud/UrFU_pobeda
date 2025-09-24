@@ -1,0 +1,8 @@
+requests==2.32.5
+regex==2025.9.1
+python-dotenv==1.1.1
+yandex_cloud_ml_sdk==0.15.0
+fastapi==0.104.1
+uvicorn==0.24.0
+httpx==0.28.1
+pydantic==2.11.9
