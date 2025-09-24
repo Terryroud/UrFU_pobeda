@@ -149,3 +149,21 @@ def get_history(user_id: int, limit: int = 50):
         return resp.json()['history']
     except requests.RequestException:
         audit_log("orchestrator", "ERROR", "Error sending getting chat history")
+
+def add_message(user_id: int, message_text: str, bot_response: str):
+    try:
+        payload = {
+        "user_id": user_id,
+        "message_text": message_text,
+        "bot_response": bot_response
+        }
+        resp = requests.post(
+            f"{DB_URL}/database/add_message/",
+            json=payload,
+            timeout=5
+        )
+        resp.raise_for_status()
+        return resp.json().get("status") == "ok"
+    except requests.RequestException:   
+        audit_log("orchestrator", "ERROR", f"Error adding message for user_id={user_id}")
+        return False
