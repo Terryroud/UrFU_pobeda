@@ -208,7 +208,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             response = "Извини, я не могу обсуждать такие темы, иначе дементоры высосут из меня душу(("
 
         # Сохраняем сообщение и ответ
-        db.add_message(user.id, user_message, response)
+        api_requests.add_message(user.id, user_message, response)
 
         await update.message.reply_text(response)
 
