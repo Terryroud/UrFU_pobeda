@@ -19,7 +19,7 @@ class UpdateUsername(BaseModel):
 class GetUser(BaseModel):
     user_id: int
 
-class AddMessage(BaseModel):
+class NewMessage(BaseModel):
     user_id: int
     message_text: str
     bot_response: str
@@ -65,3 +65,9 @@ async def get_history(user_id: int, limit: int = 50):
     }
 
     return response
+
+@app.post('/database/add_message/')
+async def add_message(message: NewMessage, request: Request):
+    db.add_message(message.user_id, message.message_text, message.bot_response)
+
+    return {"status": "ok"}
