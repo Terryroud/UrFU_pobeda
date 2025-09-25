@@ -71,7 +71,3 @@ async def add_message(message: NewMessage, request: Request):
     db.add_message(message.user_id, message.message_text, message.bot_response)
 
     return {"status": "ok"}
-
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
