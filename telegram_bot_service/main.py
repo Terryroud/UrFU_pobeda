@@ -105,10 +105,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Отправляем сообщение в оркестратор
         message_data = {
             'user_id': user.id,
-            'username': user.username,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'message': user_message,
+            'username': user.username or "",
+            'first_name': user.first_name or "",
+            'last_name': user.last_name or "",
+            'message': update.message.text,
             'chat_id': update.effective_chat.id
         }
 

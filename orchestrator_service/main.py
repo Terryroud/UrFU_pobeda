@@ -14,7 +14,6 @@ SERVICES = {
     'audit_service': os.getenv('AUDIT_URL', 'http://audit_service:8005')
 }
 
-
 class MessageRequest(BaseModel):
     user_id: int
     username: str = None
@@ -124,6 +123,14 @@ async def handle_message(request: MessageRequest):
             if not response_text:
                 response_text = "Извини, я не могу обсуждать такие темы, иначе дементоры высосут из меня душу((("
                 await audit_log("ai", "WARNING", "Empty response generated", request.user_id)
+
+            print(f"📨 Incoming message from user {request.user_id}:")
+            print(f"   username: {request.username}")
+            print(f"   first_name: {request.first_name}")
+            print(f"   last_name: {request.last_name}")
+            print(f"   message: {request.message}")
+            print(f"   chat_id: {request.chat_id}")
+            print(f"   bot_answer: {response_text}")
 
             # 7. Сохраняем сообщение в историю
             await client.post(f"{SERVICES['database_service']}/messages", json={
