@@ -40,3 +40,7 @@ async def audit_log(entry: AuditLog, request: Request):
 
     log_func(f"[{entry.service}] {entry.message} (from {client_host})")
     return {"status": "ok"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}

@@ -28,3 +28,7 @@ async def analyze_text(user_message: ValidRequest):
 	}
 
 	return response
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}

@@ -19,3 +19,7 @@ async def context_request(question: Question, request: Request):
 	}
 
 	return response
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}

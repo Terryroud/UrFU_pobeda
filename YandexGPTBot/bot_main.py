@@ -34,3 +34,7 @@ async def agent_request(full_req: FullRequest, request: Request):
 	}
 
 	return response
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
