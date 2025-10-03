@@ -15,9 +15,6 @@ S3_ACCESS_KEY = os.getenv('STATIC_ACCESS_KEY_ADMIN')
 S3_SECRET_KEY = os.getenv('STATIC_PRIVATE_KEY_ADMIN')
 S3_BUCKET = os.getenv('S3_BUCKET')
 
-os.environ["GRPC_DNS_RESOLVER"] = "native" 
-os.environ["GRPC_ARG_DNS_RESOLVER"] = "ipv4"
-
 AUDIT_URL = os.getenv("AUDIT_URL", "http://audit:8004")
 
 def audit_log(service: str, level: str, message: str):
